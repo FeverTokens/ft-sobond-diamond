@@ -14,7 +14,8 @@
     "test": "pnpm exec hardhat test",
     "deploy": "pnpm exec hardhat run --network",
     "wallet": "pnpm exec hardhat wallet",
-    "generate": "pnpm exec hardhat generate"
+    "generate": "pnpm exec hardhat generate",
+    "prettier": "prettier --write --plugin=prettier-plugin-solidity 'contracts/**/*.sol'"
   },
   "keywords": [],
   "author": "",

@@ -53,7 +53,7 @@ task(
         const privateKey = randomWallet.privateKey;
         fs.writeFileSync(
           `./.generatedWallet/${randomWallet.address}`,
-          privateKey
+          privateKey,
         );
         fs.writeFileSync(".privateKeyDeploy", privateKey);
 
@@ -61,7 +61,7 @@ task(
         console.log(`🔐 WALLET Generated as ${randomWallet.address}`);
       }
     } catch (err) {}
-  }
+  },
 );
 
 task(
@@ -75,11 +75,11 @@ task(
     fs.writeFileSync(`./.generatedWallet/${randomWallet.address}`, privateKey);
     console.log("Private key saved to .privateKeyDeploy");
     console.log(`🔐 WALLET Generated as ${randomWallet.address}`);
-  }
+  },
 );
 
 function createNetworkConfig(
-  network: keyof typeof chainIds
+  network: keyof typeof chainIds,
 ): NetworkUserConfig | any {
   let url: string = "";
   switch (network) {
@@ -107,7 +107,6 @@ function createNetworkConfig(
     default:
       url = "https://rpc.ankr.com/" + network;
   }
-  // console.log("### hardhat url:", url);
   return {
     _name: network,
     // accounts: [privateKeyDeploy],
@@ -148,6 +147,15 @@ const config: HardhatUserConfig | any = {
     },
     compilers: [
       {
+        version: "0.8.20",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 1000,
+          },
+        },
+      },
+      {
         version: "0.8.19",
         settings: {
           optimizer: {
@@ -167,10 +175,11 @@ const config: HardhatUserConfig | any = {
   },
   diamondAbi: {
     name: "diamond",
+    strict: false,
   },
   typechain: {
     outDir: "typechain",
-    target: "ethers-v5",
+    target: "ethers-v6",
   },
   mocha: {
     timeout: 100000000,
