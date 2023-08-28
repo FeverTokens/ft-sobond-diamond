@@ -11,6 +11,7 @@ artifacts
 
 .env
 .idea
+.DS_Store
 
 .generatedWallet
 .privateKeyDeploy

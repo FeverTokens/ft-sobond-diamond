@@ -90,8 +90,8 @@ abstract contract AccessControlInternal is IAccessControl {
     }
 
     /*
-     * @notice assign role to given account
-     * @param role role to assign
+     * @notice Grant role to given account
+     * @param role role to grant
      * @param account recipient of role assignment
      */
     function _grantRole(bytes32 role, address account) internal virtual {
@@ -100,8 +100,8 @@ abstract contract AccessControlInternal is IAccessControl {
     }
 
     /*
-     * @notice unassign role from given account
-     * @param role role to unassign
+     * @notice Revoke role from given account
+     * @param role role to revoke
      * @parm account
      */
     function _revokeRole(bytes32 role, address account) internal virtual {
@@ -110,8 +110,8 @@ abstract contract AccessControlInternal is IAccessControl {
     }
 
     /**
-     * @notice relinquish role
-     * @param role role to relinquish
+     * @notice Renounce role
+     * @param role role to renounce
      */
     function _renounceRole(bytes32 role) internal virtual {
         _revokeRole(role, msg.sender);
