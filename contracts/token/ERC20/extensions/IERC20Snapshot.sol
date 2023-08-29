@@ -16,7 +16,7 @@ interface IERC20Snapshot {
     event Snapshot(uint256 id);
 
     /**
-     * @notice query the token balance of given account at given snapshot id
+     * @notice Query the token balance of given account at given snapshot id
      * @param account address to query
      * @param snapshotId snapshot id to query
      * @return token balance
@@ -27,7 +27,7 @@ interface IERC20Snapshot {
     ) external view returns (uint256);
 
     /**
-     * @notice query the total minted token supply at given snapshot id
+     * @notice Query the total minted token supply at given snapshot id
      * @param snapshotId snapshot id to query
      * @return token supply
      */

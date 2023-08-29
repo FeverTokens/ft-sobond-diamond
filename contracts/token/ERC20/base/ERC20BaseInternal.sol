@@ -85,6 +85,31 @@ abstract contract ERC20BaseInternal is IERC20Base {
     }
 
     /**
+     * @dev Updates `holder` s allowance for `spender` based on spent `amount`.
+     *
+     * Does not update the allowance amount in case of infinite allowance.
+     * Revert if not enough allowance is available.
+     *
+     * Might emit an {Approval} event.
+     */
+    function _spendAllowance(
+        address holder,
+        address spender,
+        uint256 amount
+    ) internal virtual {
+        uint256 currentAllowance = _allowance(holder, spender);
+        if (currentAllowance != type(uint256).max) {
+            require(
+                currentAllowance >= amount,
+                "ERC20: insufficient allowance"
+            );
+            unchecked {
+                _approve(holder, spender, currentAllowance - amount);
+            }
+        }
+    }
+
+    /**
      * @notice mint tokens for given account
      * @param account recipient of minted tokens
      * @param amount quantity of tokens minted
