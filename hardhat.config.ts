@@ -1,5 +1,7 @@
 import { HardhatUserConfig, NetworkUserConfig } from "hardhat/types";
 import "hardhat-diamond-abi";
+import "hardhat-gas-reporter";
+import "hardhat-contract-sizer";
 import "@typechain/hardhat";
 import { task } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
