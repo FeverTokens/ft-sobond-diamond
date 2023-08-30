@@ -3,20 +3,24 @@
 
 pragma solidity ^0.8.20;
 
-import { IPausable } from "./IPausable.sol";
+import { IPausableInternal } from "./IPausableInternal.sol";
 import { PausableStorage } from "./PausableStorage.sol";
 
 /**
  * @title Internal functions for Pausable security control module.
  */
-abstract contract PausableInternal is IPausable {
-    modifier whenNotPaused() {
-        require(!_paused(), "Pausable: paused");
+abstract contract PausableInternal is IPausableInternal {
+    modifier whenPaused() {
+        if (!_paused()) {
+            revert Pausable__NotPaused();
+        }
         _;
     }
 
-    modifier whenPaused() {
-        require(_paused(), "Pausable: not paused");
+    modifier whenNotPaused() {
+        if (_paused()) {
+            revert Pausable__Paused();
+        }
         _;
     }
 
