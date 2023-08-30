@@ -4,8 +4,9 @@
 pragma solidity ^0.8.20;
 
 import { IERC173 } from "./IERC173.sol";
+import { IOwnableInternal } from "./IOwnableInternal.sol";
 
-interface IOwnable is IERC173 {
+interface IOwnable is IERC173, IOwnableInternal {
     /**
      * @notice Leaves the contract without owner. It will not be possible to call
      *
