@@ -3,7 +3,7 @@
 
 pragma solidity ^0.8.20;
 
-import { IERC20 } from "../IERC20.sol";
+import { IERC20 } from "../IERC20.sol"; /// @dev this is required to inherit documentation only
 import { IERC20Base } from "./IERC20Base.sol";
 import { ERC20BaseInternal } from "./ERC20BaseInternal.sol";
 

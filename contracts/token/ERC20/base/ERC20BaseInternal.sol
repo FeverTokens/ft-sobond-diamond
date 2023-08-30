@@ -3,13 +3,13 @@
 
 pragma solidity ^0.8.20;
 
-import { IERC20Base } from "./IERC20Base.sol";
+import { IERC20BaseInternal } from "./IERC20BaseInternal.sol";
 import { ERC20BaseStorage } from "./ERC20BaseStorage.sol";
 
 /**
  * @title Base ERC20 internal functions, excluding optional extensions
  */
-abstract contract ERC20BaseInternal is IERC20Base {
+abstract contract ERC20BaseInternal is IERC20BaseInternal {
     /**
      * @notice query the total minted token supply
      * @return token supply
