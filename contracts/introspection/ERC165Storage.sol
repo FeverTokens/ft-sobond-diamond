@@ -17,20 +17,4 @@ library ERC165Storage {
             l.slot := slot
         }
     }
-
-    function isSupportedInterface(
-        Layout storage l,
-        bytes4 interfaceId
-    ) internal view returns (bool) {
-        return l.supportedInterfaces[interfaceId];
-    }
-
-    function setSupportedInterface(
-        Layout storage l,
-        bytes4 interfaceId,
-        bool status
-    ) internal {
-        require(interfaceId != 0xffffffff, "ERC165: invalid interface id");
-        l.supportedInterfaces[interfaceId] = status;
-    }
 }
