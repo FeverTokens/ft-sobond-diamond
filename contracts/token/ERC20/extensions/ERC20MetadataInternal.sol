@@ -3,12 +3,13 @@
 
 pragma solidity ^0.8.20;
 
+import { IERC20MetadataInternal } from "./IERC20MetadataInternal.sol";
 import { ERC20MetadataStorage } from "./ERC20MetadataStorage.sol";
 
 /**
  * @title ERC20Metadata internal functions
  */
-abstract contract ERC20MetadataInternal {
+abstract contract ERC20MetadataInternal is IERC20MetadataInternal {
     /**
      * @notice return token name
      * @return token name
