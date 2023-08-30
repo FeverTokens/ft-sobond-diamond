@@ -3,18 +3,12 @@
 
 pragma solidity ^0.8.20;
 
+import { IERC20SnapshotInternal } from "./IERC20SnapshotInternal.sol";
+
 /**
  * @title ERC20 snapshot interface
  */
-interface IERC20Snapshot {
-    error ERC20Snapshot__SnapshotIdDoesNotExists();
-    error ERC20Snapshot__SnapshotIdIsZero();
-
-    /**
-     * @dev Emitted by {_snapshot} when a snapshot identified by `id` is created.
-     */
-    event Snapshot(uint256 id);
-
+interface IERC20Snapshot is IERC20SnapshotInternal {
     /**
      * @notice Query the token balance of given account at given snapshot id
      * @param account address to query
