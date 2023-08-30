@@ -3,7 +3,7 @@
 
 pragma solidity ^0.8.20;
 
-import { IAccessControl } from "./IAccessControl.sol";
+import { IAccessControlInternal } from "./IAccessControlInternal.sol";
 import { AccessControlStorage } from "./AccessControlStorage.sol";
 import { EnumerableSet } from "../../data/EnumerableSet.sol";
 import { AddressUtils } from "../../utils/AddressUtils.sol";
@@ -13,7 +13,7 @@ import { UintUtils } from "../../utils/UintUtils.sol";
  * @title Role-based access control system
  * @dev derived from https://github.com/OpenZeppelin/openzeppelin-contracts (MIT license)
  */
-abstract contract AccessControlInternal is IAccessControl {
+abstract contract AccessControlInternal is IAccessControlInternal {
     using AddressUtils for address;
     using EnumerableSet for EnumerableSet.AddressSet;
     using UintUtils for uint256;
