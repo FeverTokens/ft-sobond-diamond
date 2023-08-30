@@ -6,7 +6,7 @@ pragma solidity ^0.8.20;
 import { IERC165Internal } from "./IERC165Internal.sol";
 import { ERC165Storage } from "./ERC165Storage.sol";
 
-contract ERC165Internal is IERC165Internal {
+abstract contract ERC165Internal is IERC165Internal {
     function _supportedInterface(
         bytes4 interfaceId
     ) internal view returns (bool) {
