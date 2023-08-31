@@ -6,7 +6,7 @@ pragma solidity ^0.8.20;
 import { IDiamondCutInternal } from "./IDiamondCutInternal.sol";
 import { DiamondStorage } from "./DiamondStorage.sol";
 
-contract DiamondCutInternal is IDiamondCutInternal {
+abstract contract DiamondCutInternal is IDiamondCutInternal {
     function _diamondCutImplementation(
         FacetCut[] memory _diamondCut,
         address _init,

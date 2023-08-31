@@ -6,7 +6,7 @@ pragma solidity ^0.8.20;
 import { IDiamondLoupeInternal } from "./IDiamondLoupeInternal.sol";
 import { DiamondStorage } from "./DiamondStorage.sol";
 
-contract DiamondLoupeInternal is IDiamondLoupeInternal {
+abstract contract DiamondLoupeInternal is IDiamondLoupeInternal {
     function _facets() internal view returns (Facet[] memory facets_) {
         DiamondStorage.Layout storage l = DiamondStorage.layout();
         uint256 numFacets = l.facetAddresses.length;
