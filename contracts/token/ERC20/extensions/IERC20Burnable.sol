@@ -3,10 +3,12 @@
 
 pragma solidity ^0.8.20;
 
+import { IERC20BurnableInternal } from "./IERC20BurnableInternal.sol";
+
 /**
- * @dev Extension of {ERC20} that allows holders or approved operators to burn tokens.
+ * @title ERC20 burnable interface
  */
-interface IERC20Burnable {
+interface IERC20Burnable is IERC20BurnableInternal {
     /**
      * @notice Destroys `amount` tokens from the caller.
      * @param amount The amount of tokens to burn.
