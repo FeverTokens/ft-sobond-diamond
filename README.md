@@ -1,13 +1,5 @@
-# Sample Hardhat Project
+# FeverTokens Diamond Base Implementation
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+This project is a core implementation of the Diamond Standard [EIP-2535](https://eips.ethereum.org/EIPS/eip-2535) in Solidity. The Diamond Standard is a way to create upgradeable and modular smart contracts using the concept of diamonds. A diamond is a contract that can have multiple facets, which are contracts that implement some functionality of the diamond. Facets can be added, replaced or removed dynamically, allowing for flexible and scalable development.
 
-Try running some of the following tasks:
-
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.ts
-```
+This base implementation is designed to be secure and efficient. It uses the diamond storage and supports any number of facets and selectors. The base implementation is not meant to be used as-is, but rather as a base or reference for building more complex and customized diamonds.
