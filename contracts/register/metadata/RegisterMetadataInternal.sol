@@ -4,11 +4,13 @@
 pragma solidity ^0.8.20;
 
 import { IRegisterMetadataInternal } from "./IRegisterMetadataInternal.sol";
-import { RegisterStorage } from "./RegisterStorage.sol";
-import { AccessControl } from "../access/rbac/AccessControl.sol";
+import { RegisterStorage } from "../RegisterStorage.sol";
+import { CouponSnapshotManagementInternal } from "../coupon/CouponSnapshotManagementInternal.sol";
+import { AccessControl } from "../../access/rbac/AccessControl.sol";
 
 abstract contract RegisterMetadataInternal is
     IRegisterMetadataInternal,
+    CouponSnapshotManagementInternal,
     AccessControl
 {
     function _setIsinSymbol(
@@ -18,11 +20,36 @@ abstract contract RegisterMetadataInternal is
         l.data.isin = _isinSymbol;
     }
 
+    function _getBondData() internal view virtual returns (BondData memory) {
+        RegisterStorage.Layout storage l = RegisterStorage.layout();
+        return l.data;
+    }
+
+    function _getBondCouponRate() internal view virtual returns (uint256) {
+        RegisterStorage.Layout storage l = RegisterStorage.layout();
+        return l.data.couponRate;
+    }
+
+    function _getBondUnitValue() internal view virtual returns (uint256) {
+        RegisterStorage.Layout storage l = RegisterStorage.layout();
+        return l.data.unitValue;
+    }
+
     function _setCurrency(
         bytes32 _currency
     ) internal virtual onlyRole(RegisterStorage.CAK_ROLE) {
         RegisterStorage.Layout storage l = RegisterStorage.layout();
         l.data.currency = _currency;
+    }
+
+    function _getCreationDate() internal view virtual returns (uint256) {
+        RegisterStorage.Layout storage l = RegisterStorage.layout();
+        return l.data.creationDate;
+    }
+
+    function _getIssuanceDate() public view virtual returns (uint256) {
+        RegisterStorage.Layout storage l = RegisterStorage.layout();
+        return l.data.issuanceDate;
     }
 
     function _setCreationDate(
@@ -65,6 +92,52 @@ abstract contract RegisterMetadataInternal is
         l.data.maturityDate = _data.maturityDate;
         l.data.couponDates = _data.couponDates;
         l.data.cutOffTime = _data.cutOffTime;
+    }
+
+    function _addCouponDate(
+        uint256 date
+    ) internal virtual onlyRole(RegisterStorage.CAK_ROLE) {
+        RegisterStorage.Layout storage l = RegisterStorage.layout();
+        require(
+            date > l.data.issuanceDate,
+            "Cannot set a coupon date smaller or equal to the issuance date"
+        );
+        require(
+            date < l.data.maturityDate,
+            "Cannot set a coupon date greater or equal to the maturity date"
+        );
+        (uint256 index, bool found) = _findCouponIndex(date);
+        if (!found) {
+            require(
+                _canInsertCouponDate(date),
+                "Cannot insert this date, it is in the past"
+            );
+            // need to move the items up and insert the item
+            if (l.data.couponDates.length > 0) {
+                l.data.couponDates.push(
+                    l.data.couponDates[l.data.couponDates.length - 1]
+                );
+                // now length has one more so length-2 is the previous latest element
+                if (l.data.couponDates.length >= 3) {
+                    // we had at least 2 elements before so perform the copy
+                    for (
+                        uint256 i = l.data.couponDates.length - 3;
+                        i >= index;
+                        i--
+                    ) {
+                        l.data.couponDates[i + 1] = l.data.couponDates[i];
+                        if (i == 0) break;
+                    }
+                }
+                // now add the new item
+                l.data.couponDates[index] = date;
+            } else {
+                // there was no item initially, so add the new item
+                l.data.couponDates.push(date);
+            }
+            // ensure adding this date in the coupons will update the snapshot preparation properly
+            _initCurrentCoupon();
+        } // the coupon already exists do nothing
     }
 
     function _delCouponDate(
@@ -152,5 +225,16 @@ abstract contract RegisterMetadataInternal is
     function _setCouponRate(uint256 _couponRate) internal virtual {
         RegisterStorage.Layout storage l = RegisterStorage.layout();
         l.data.couponRate = _couponRate;
+    }
+
+    function _setExpectedSupply(
+        uint256 expectedSupply_
+    ) internal virtual onlyRole(RegisterStorage.CAK_ROLE) {
+        RegisterStorage.Layout storage l = RegisterStorage.layout();
+        require(
+            l.status == Status.Draft,
+            "lifecycle violation - only allowed when status is in draft"
+        );
+        l.data.expectedSupply = expectedSupply_;
     }
 }

@@ -44,25 +44,9 @@ interface IRegisterMetadata is IRegisterMetadataInternal {
 
     /**
      * @notice Set Bond data
-     * @param name The name of the bond
-     * @param expectedSupply The expected supply of the bond
-     * @param currency The currency of the bond
-     * @param unitVal The unit value of the bond
-     * @param couponRate The coupon rate of the bond
-     * @param issuanceDate The issuance date of the bond
-     * @param maturityDate The maturity date of the bond
-     *
+     * @param _data The bond data
      */
-    function setBondData(
-        string memory name,
-        uint256 expectedSupply,
-        bytes32 currency,
-        uint256 unitVal,
-        uint256 couponRate,
-        uint256 issuanceDate,
-        uint256 maturityDate,
-        uint256 cutOffTime
-    ) external;
+    function setBondData(BondData calldata _data) external;
 
     /**
      * @notice Add a coupon date

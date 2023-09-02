@@ -17,7 +17,7 @@ abstract contract AccessControl is IAccessControl, AccessControlInternal {
     function grantRole(
         bytes32 role,
         address account
-    ) external onlyRole(_getRoleAdmin(role)) {
+    ) external virtual onlyRole(_getRoleAdmin(role)) {
         _grantRole(role, account);
     }
 
@@ -44,7 +44,7 @@ abstract contract AccessControl is IAccessControl, AccessControlInternal {
     function revokeRole(
         bytes32 role,
         address account
-    ) external onlyRole(_getRoleAdmin(role)) {
+    ) external virtual onlyRole(_getRoleAdmin(role)) {
         _revokeRole(role, account);
     }
 

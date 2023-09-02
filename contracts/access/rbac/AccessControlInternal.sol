@@ -18,6 +18,8 @@ abstract contract AccessControlInternal is IAccessControlInternal {
     using EnumerableSet for EnumerableSet.AddressSet;
     using UintUtils for uint256;
 
+    bytes32 internal constant DEFAULT_ADMIN_ROLE = 0x00;
+
     modifier onlyRole(bytes32 role) {
         _checkRole(role);
         _;
@@ -115,6 +117,15 @@ abstract contract AccessControlInternal is IAccessControlInternal {
      */
     function _renounceRole(bytes32 role) internal virtual {
         _revokeRole(role, msg.sender);
+    }
+
+    /**
+     * @notice Setup role for given account
+     * @param role role to set
+     * @param account recipient of role assignment
+     */
+    function _setupRole(bytes32 role, address account) internal virtual {
+        _grantRole(role, account);
     }
 
     /**

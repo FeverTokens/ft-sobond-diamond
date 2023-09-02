@@ -3,20 +3,15 @@
 
 pragma solidity ^0.8.20;
 
-import { EnumerableSet } from "../../data/EnumerableSet.sol";
+import { ICoupon } from "./ICoupon.sol";
 
-library AccessControlStorage {
-    struct RoleData {
-        EnumerableSet.AddressSet roleMembers;
-        bytes32 adminRole;
-    }
-
+library RedemptionStorage {
     struct Layout {
-        mapping(bytes32 => RoleData) roles;
+        mapping(address => ICoupon.PaymentStatus) investorRedemptionPayments;
     }
 
     bytes32 internal constant STORAGE_SLOT =
-        keccak256("openzeppelin.contracts.storage.AccessControl");
+        keccak256("cacib.contracts.storage.Redemption");
 
     function layout() internal pure returns (Layout storage l) {
         bytes32 slot = STORAGE_SLOT;

@@ -4,6 +4,14 @@
 pragma solidity ^0.8.20;
 
 interface IRegisterMetadataInternal {
+    enum Status {
+        Draft,
+        Ready,
+        Issued,
+        Repaid,
+        Frozen
+    }
+
     struct BondData {
         string name;
         string isin;
