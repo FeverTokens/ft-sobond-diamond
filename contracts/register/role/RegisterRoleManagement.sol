@@ -5,12 +5,11 @@ pragma solidity ^0.8.20;
 
 import { IRegisterRoleManagement } from "./IRegisterRoleManagement.sol";
 import { RegisterRoleManagementInternal } from "./RegisterRoleManagementInternal.sol";
-import { AccessControl, IAccessControl, AccessControlInternal } from "../../access/rbac/AccessControl.sol";
+import { AccessControl, IAccessControl } from "../../access/rbac/AccessControl.sol";
 
 contract RegisterRoleManagement is
     IRegisterRoleManagement,
-    RegisterRoleManagementInternal,
-    AccessControl
+    RegisterRoleManagementInternal
 {
     /// @inheritdoc IRegisterRoleManagement
     function registerAdmin() public view returns (address) {
@@ -53,18 +52,12 @@ contract RegisterRoleManagement is
     }
 
     /// @inheritdoc IAccessControl
-    function grantRole(
-        bytes32 role,
-        address account
-    ) public virtual override(IAccessControl, AccessControl) {
+    function grantRole(bytes32 role, address account) public virtual override {
         _grantRole(role, account);
     }
 
     /// @inheritdoc IAccessControl
-    function revokeRole(
-        bytes32 role,
-        address account
-    ) public virtual override(IAccessControl, AccessControl) {
+    function revokeRole(bytes32 role, address account) public virtual override {
         _revokeRole(role, account);
     }
 
@@ -123,22 +116,14 @@ contract RegisterRoleManagement is
     function _revokeRole(
         bytes32 role,
         address account
-    )
-        internal
-        virtual
-        override(AccessControlInternal, RegisterRoleManagementInternal)
-    {
+    ) internal virtual override {
         super._revokeRole(role, account);
     }
 
     function _grantRole(
         bytes32 role,
         address account
-    )
-        internal
-        virtual
-        override(AccessControlInternal, RegisterRoleManagementInternal)
-    {
+    ) internal virtual override {
         super._grantRole(role, account);
     }
 }

@@ -5,19 +5,31 @@ pragma solidity ^0.8.20;
 
 import { IRegisterMetadataInternal } from "./IRegisterMetadataInternal.sol";
 import { RegisterStorage } from "../RegisterStorage.sol";
-import { CouponSnapshotManagementInternal } from "../coupon/CouponSnapshotManagementInternal.sol";
-import { AccessControl } from "../../access/rbac/AccessControl.sol";
+import { CouponSnapshotManagement } from "../coupon/CouponSnapshotManagement.sol";
+import { RegisterRoleManagement } from "../role/RegisterRoleManagement.sol";
 
 abstract contract RegisterMetadataInternal is
     IRegisterMetadataInternal,
-    CouponSnapshotManagementInternal,
-    AccessControl
+    CouponSnapshotManagement,
+    RegisterRoleManagement
 {
     function _setIsinSymbol(
         string memory _isinSymbol
-    ) internal virtual onlyRole(RegisterStorage.CAK_ROLE) {
+    ) internal virtual onlyRole(CAK_ROLE) {
         RegisterStorage.Layout storage l = RegisterStorage.layout();
         l.data.isin = _isinSymbol;
+    }
+
+    function _setCurrency(
+        bytes32 _currency
+    ) internal virtual onlyRole(CAK_ROLE) {
+        RegisterStorage.Layout storage l = RegisterStorage.layout();
+        l.data.currency = _currency;
+    }
+
+    function _getCreationDate() internal view virtual returns (uint256) {
+        RegisterStorage.Layout storage l = RegisterStorage.layout();
+        return l.data.creationDate;
     }
 
     function _getBondData() internal view virtual returns (BondData memory) {
@@ -35,18 +47,6 @@ abstract contract RegisterMetadataInternal is
         return l.data.unitValue;
     }
 
-    function _setCurrency(
-        bytes32 _currency
-    ) internal virtual onlyRole(RegisterStorage.CAK_ROLE) {
-        RegisterStorage.Layout storage l = RegisterStorage.layout();
-        l.data.currency = _currency;
-    }
-
-    function _getCreationDate() internal view virtual returns (uint256) {
-        RegisterStorage.Layout storage l = RegisterStorage.layout();
-        return l.data.creationDate;
-    }
-
     function _getIssuanceDate() public view virtual returns (uint256) {
         RegisterStorage.Layout storage l = RegisterStorage.layout();
         return l.data.issuanceDate;
@@ -54,21 +54,21 @@ abstract contract RegisterMetadataInternal is
 
     function _setCreationDate(
         uint256 _creationDate
-    ) internal virtual onlyRole(RegisterStorage.CAK_ROLE) {
+    ) internal virtual onlyRole(CAK_ROLE) {
         RegisterStorage.Layout storage l = RegisterStorage.layout();
         l.data.creationDate = _creationDate;
     }
 
     function _setIssuanceDate(
         uint256 issuanceDate_
-    ) internal virtual onlyRole(RegisterStorage.CAK_ROLE) {
+    ) internal virtual onlyRole(CAK_ROLE) {
         RegisterStorage.Layout storage l = RegisterStorage.layout();
         l.data.issuanceDate = issuanceDate_;
     }
 
     function _setBondData(
         BondData calldata _data
-    ) internal virtual onlyRole(RegisterStorage.CAK_ROLE) {
+    ) internal virtual onlyRole(CAK_ROLE) {
         RegisterStorage.Layout storage l = RegisterStorage.layout();
 
         if (_data.couponDates.length > 0) {
@@ -94,9 +94,7 @@ abstract contract RegisterMetadataInternal is
         l.data.cutOffTime = _data.cutOffTime;
     }
 
-    function _addCouponDate(
-        uint256 date
-    ) internal virtual onlyRole(RegisterStorage.CAK_ROLE) {
+    function _addCouponDate(uint256 date) internal virtual onlyRole(CAK_ROLE) {
         RegisterStorage.Layout storage l = RegisterStorage.layout();
         require(
             date > l.data.issuanceDate,
@@ -140,9 +138,7 @@ abstract contract RegisterMetadataInternal is
         } // the coupon already exists do nothing
     }
 
-    function _delCouponDate(
-        uint256 date
-    ) internal virtual onlyRole(RegisterStorage.CAK_ROLE) {
+    function _delCouponDate(uint256 date) internal virtual onlyRole(CAK_ROLE) {
         RegisterStorage.Layout storage l = RegisterStorage.layout();
         (uint256 index, bool found) = _findCouponIndex(date);
         if (found) {
@@ -229,7 +225,7 @@ abstract contract RegisterMetadataInternal is
 
     function _setExpectedSupply(
         uint256 expectedSupply_
-    ) internal virtual onlyRole(RegisterStorage.CAK_ROLE) {
+    ) internal virtual onlyRole(CAK_ROLE) {
         RegisterStorage.Layout storage l = RegisterStorage.layout();
         require(
             l.status == Status.Draft,

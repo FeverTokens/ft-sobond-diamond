@@ -6,13 +6,15 @@ pragma solidity ^0.8.20;
 import { IRegisterMetadata } from "./IRegisterMetadata.sol";
 import { RegisterMetadataInternal } from "./RegisterMetadataInternal.sol";
 
-abstract contract RegisterMetadata is
-    IRegisterMetadata,
-    RegisterMetadataInternal
-{
+contract RegisterMetadata is IRegisterMetadata, RegisterMetadataInternal {
     /// @inheritdoc IRegisterMetadata
     function setIsinSymbol(string memory isinSymbol) public {
         _setIsinSymbol(isinSymbol);
+    }
+
+    /// @inheritdoc IRegisterMetadata
+    function setCurrency(bytes32 currency) public {
+        _setCurrency(currency);
     }
 
     function getBondData() public view override returns (BondData memory) {
@@ -25,11 +27,6 @@ abstract contract RegisterMetadata is
 
     function getBondUnitValue() public view override returns (uint256) {
         return _getBondUnitValue();
-    }
-
-    /// @inheritdoc IRegisterMetadata
-    function setCurrency(bytes32 currency) public {
-        _setCurrency(currency);
     }
 
     /// @inheritdoc IRegisterMetadata

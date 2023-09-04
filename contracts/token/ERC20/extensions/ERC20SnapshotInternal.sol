@@ -4,17 +4,14 @@
 pragma solidity ^0.8.20;
 
 import { IERC20SnapshotInternal } from "./IERC20SnapshotInternal.sol";
-import { ERC20BaseInternal } from "../base/ERC20Base.sol";
+import { ERC20Base, ERC20BaseInternal } from "../base/ERC20Base.sol";
 import { ERC20SnapshotStorage } from "./ERC20SnapshotStorage.sol";
 import { Math } from "../../../utils/Math.sol";
 
 /**
  * @title ERC20Snapshot internal functions
  */
-abstract contract ERC20SnapshotInternal is
-    IERC20SnapshotInternal,
-    ERC20BaseInternal
-{
+abstract contract ERC20SnapshotInternal is IERC20SnapshotInternal, ERC20Base {
     function _balanceOfAt(
         address account,
         uint256 snapshotId

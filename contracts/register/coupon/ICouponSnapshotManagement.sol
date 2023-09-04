@@ -6,9 +6,12 @@ pragma solidity ^0.8.20;
 import { ICouponSnapshotManagementInternal } from "./ICouponSnapshotManagementInternal.sol";
 import { IERC20Snapshot } from "../../token/ERC20/extensions/IERC20Snapshot.sol";
 
+import { IERC20Metadata } from "../../token/ERC20/extensions/IERC20Metadata.sol";
+
 interface ICouponSnapshotManagement is
     ICouponSnapshotManagementInternal,
-    IERC20Snapshot
+    IERC20Snapshot,
+    IERC20Metadata
 {
     /**
      * @notice Retrieve the current snapshot datetime.

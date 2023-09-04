@@ -5,12 +5,34 @@ pragma solidity ^0.8.20;
 
 import { ICouponSnapshotManagementInternal } from "./ICouponSnapshotManagementInternal.sol";
 import { CouponSnapshotManagementStorage } from "./CouponSnapshotManagementStorage.sol";
+
 import { ERC20Snapshot } from "../../token/ERC20/extensions/ERC20Snapshot.sol";
+import { ERC20Metadata } from "../../token/ERC20/extensions/ERC20Metadata.sol";
+
+import { RegisterStorage } from "../RegisterStorage.sol";
 
 abstract contract CouponSnapshotManagementInternal is
     ICouponSnapshotManagementInternal,
-    ERC20Snapshot
+    ERC20Snapshot,
+    ERC20Metadata
 {
+    /**
+     * @dev Returns the name of the token.
+     */
+    function _name() internal view virtual override returns (string memory) {
+        RegisterStorage.Layout storage l = RegisterStorage.layout();
+        return l.data.name;
+    }
+
+    /**
+     * @dev Returns the symbol of the token, usually a shorter version of the
+     * name.
+     */
+    function _symbol() internal view virtual override returns (string memory) {
+        RegisterStorage.Layout storage l = RegisterStorage.layout();
+        return l.data.isin;
+    }
+
     function _currentSnapshotDatetime() internal view returns (uint256) {
         CouponSnapshotManagementStorage.Layout
             storage l = CouponSnapshotManagementStorage.layout();

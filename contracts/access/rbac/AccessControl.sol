@@ -27,14 +27,16 @@ abstract contract AccessControl is IAccessControl, AccessControlInternal {
     function hasRole(
         bytes32 role,
         address account
-    ) external view returns (bool) {
+    ) external view virtual returns (bool) {
         return _hasRole(role, account);
     }
 
     /**
      * @inheritdoc IAccessControl
      */
-    function getRoleAdmin(bytes32 role) external view returns (bytes32) {
+    function getRoleAdmin(
+        bytes32 role
+    ) external view virtual returns (bytes32) {
         return _getRoleAdmin(role);
     }
 
@@ -51,7 +53,7 @@ abstract contract AccessControl is IAccessControl, AccessControlInternal {
     /**
      * @inheritdoc IAccessControl
      */
-    function renounceRole(bytes32 role) external {
+    function renounceRole(bytes32 role) external virtual {
         _renounceRole(role);
     }
 
@@ -61,14 +63,16 @@ abstract contract AccessControl is IAccessControl, AccessControlInternal {
     function getRoleMember(
         bytes32 role,
         uint256 index
-    ) external view returns (address) {
+    ) external view virtual returns (address) {
         return _getRoleMember(role, index);
     }
 
     /**
      * @inheritdoc IAccessControl
      */
-    function getRoleMemberCount(bytes32 role) external view returns (uint256) {
+    function getRoleMemberCount(
+        bytes32 role
+    ) external view virtual returns (uint256) {
         return _getRoleMemberCount(role);
     }
 }

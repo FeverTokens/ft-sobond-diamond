@@ -5,11 +5,11 @@ pragma solidity ^0.8.20;
 
 import { IRegisterRoleManagementInternal } from "./IRegisterRoleManagementInternal.sol";
 import { RegisterRoleManagementStorage } from "./RegisterRoleManagementStorage.sol";
-import { AccessControlInternal, AccessControlStorage } from "../../access/rbac/AccessControlInternal.sol";
+import { AccessControl } from "../../access/rbac/AccessControl.sol";
 
 abstract contract RegisterRoleManagementInternal is
     IRegisterRoleManagementInternal,
-    AccessControlInternal
+    AccessControl
 {
     /**
      * Roles

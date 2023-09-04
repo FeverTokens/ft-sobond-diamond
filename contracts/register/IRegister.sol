@@ -4,17 +4,15 @@
 pragma solidity ^0.8.20;
 
 import { IRegisterInternal } from "./IRegisterInternal.sol";
-import { IERC20 } from "../token/ERC20/IERC20.sol";
-import { IERC20Metadata } from "../token/ERC20/extensions/IERC20Metadata.sol";
 import { IRegisterMetadata } from "./metadata/IRegisterMetadata.sol";
 import { IRegisterRoleManagement } from "./role/IRegisterRoleManagement.sol";
+import { ICouponSnapshotManagement } from "./coupon/ICouponSnapshotManagement.sol";
 
 interface IRegister is
     IRegisterInternal,
     IRegisterMetadata,
     IRegisterRoleManagement,
-    IERC20Metadata,
-    IERC20
+    ICouponSnapshotManagement
 {
     function primaryIssuanceAccount() external view returns (address);
 
@@ -26,9 +24,7 @@ interface IRegister is
 
     function disableInvestorFromWhitelist(address investor) external;
 
-    function enableInvestorToWhitelist(address investor) external;
-
-    //TODO: maybe expose getInvestorInfo(address investor) returns (InvestorInfo)
+    function enableInvestorToWhitelist(address investor) external; //TODO: maybe expose getInvestorInfo(address investor) returns (InvestorInfo)
 
     function investorsAllowed(address investor) external view returns (bool);
 

@@ -6,10 +6,7 @@ pragma solidity ^0.8.20;
 import { IRegisterRoleManagementInternal } from "./IRegisterRoleManagementInternal.sol";
 import { IAccessControl } from "../../access/rbac/IAccessControl.sol";
 
-interface IRegisterRoleManagement is
-    IRegisterRoleManagementInternal,
-    IAccessControl
-{
+interface IRegisterRoleManagement is IRegisterRoleManagementInternal {
     /**
      * @notice Return the address of the Register admin
      * @return address of the Register admin
