@@ -6,13 +6,15 @@ pragma solidity ^0.8.20;
 import { IRegisterInternal } from "./IRegisterInternal.sol";
 import { IRegisterMetadata } from "./metadata/IRegisterMetadata.sol";
 import { IRegisterRoleManagement } from "./role/IRegisterRoleManagement.sol";
-import { ICouponSnapshotManagement } from "./coupon/ICouponSnapshotManagement.sol";
+import { IERC20Snapshot } from "../token/ERC20/extensions/IERC20Snapshot.sol";
+import { IERC20Metadata } from "../token/ERC20/extensions/IERC20Metadata.sol";
 
 interface IRegister is
     IRegisterInternal,
     IRegisterMetadata,
     IRegisterRoleManagement,
-    ICouponSnapshotManagement
+    IERC20Snapshot,
+    IERC20Metadata
 {
     function primaryIssuanceAccount() external view returns (address);
 

@@ -20,9 +20,9 @@ Get the address of the owner
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | address | The address of the owner. |
+| Name | Type    | Description               |
+| ---- | ------- | ------------------------- |
+| [0]  | address | The address of the owner. |
 
 ### transferOwnership
 
@@ -34,8 +34,8 @@ Set the address of the new owner of the contract
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name    | Type    | Description                                  |
+| ------- | ------- | -------------------------------------------- |
 | account | address | The address of the new owner of the contract |
 
 ## IOwnable
@@ -63,9 +63,9 @@ Get the address of the owner
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | address | The address of the owner. |
+| Name | Type    | Description               |
+| ---- | ------- | ------------------------- |
+| [0]  | address | The address of the owner. |
 
 ### transferOwnership
 
@@ -77,8 +77,8 @@ Set the address of the new owner of the contract
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name    | Type    | Description                                  |
+| ------- | ------- | -------------------------------------------- |
 | account | address | The address of the new owner of the contract |
 
 ### renounceOwnership
@@ -100,19 +100,19 @@ thereby disabling any functionality that is only available to the owner.
 modifier onlyOwner()
 ```
 
-### _owner
+### \_owner
 
 ```solidity
 function _owner() internal view virtual returns (address)
 ```
 
-### _transferOwnership
+### \_transferOwnership
 
 ```solidity
 function _transferOwnership(address account) internal virtual
 ```
 
-### _setOwner
+### \_setOwner
 
 ```solidity
 function _setOwner(address account) internal virtual
@@ -178,8 +178,8 @@ relinquish role
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name | Type    | Description        |
+| ---- | ------- | ------------------ |
 | role | bytes32 | role to relinquish |
 
 ### getRoleMember
@@ -218,13 +218,13 @@ _derived from https://github.com/OpenZeppelin/openzeppelin-contracts (MIT licens
 modifier onlyRole(bytes32 role)
 ```
 
-### _hasRole
+### \_hasRole
 
 ```solidity
 function _hasRole(bytes32 role, address account) internal view virtual returns (bool)
 ```
 
-### _checkRole
+### \_checkRole
 
 ```solidity
 function _checkRole(bytes32 role) internal view virtual
@@ -234,11 +234,11 @@ revert if sender does not have given role
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name | Type    | Description   |
+| ---- | ------- | ------------- |
 | role | bytes32 | role to query |
 
-### _checkRole
+### \_checkRole
 
 ```solidity
 function _checkRole(bytes32 role, address account) internal view virtual
@@ -248,18 +248,18 @@ revert if given account does not have given role
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| role | bytes32 | role to query |
-| account | address | to query |
+| Name    | Type    | Description   |
+| ------- | ------- | ------------- |
+| role    | bytes32 | role to query |
+| account | address | to query      |
 
-### _getRoleAdmin
+### \_getRoleAdmin
 
 ```solidity
 function _getRoleAdmin(bytes32 role) internal view virtual returns (bytes32)
 ```
 
-### _setRoleAdmin
+### \_setRoleAdmin
 
 ```solidity
 function _setRoleAdmin(bytes32 role, bytes32 adminRole) internal virtual
@@ -269,24 +269,24 @@ set role as admin role
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| role | bytes32 | role to set |
+| Name      | Type    | Description       |
+| --------- | ------- | ----------------- |
+| role      | bytes32 | role to set       |
 | adminRole | bytes32 | admin role to set |
 
-### _grantRole
+### \_grantRole
 
 ```solidity
 function _grantRole(bytes32 role, address account) internal virtual
 ```
 
-### _revokeRole
+### \_revokeRole
 
 ```solidity
 function _revokeRole(bytes32 role, address account) internal virtual
 ```
 
-### _renounceRole
+### \_renounceRole
 
 ```solidity
 function _renounceRole(bytes32 role) internal virtual
@@ -296,11 +296,11 @@ Renounce role
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name | Type    | Description      |
+| ---- | ------- | ---------------- |
 | role | bytes32 | role to renounce |
 
-### _getRoleMember
+### \_getRoleMember
 
 ```solidity
 function _getRoleMember(bytes32 role, uint256 index) internal view virtual returns (address)
@@ -310,12 +310,12 @@ query role for member at given index
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| role | bytes32 | role to query |
+| Name  | Type    | Description    |
+| ----- | ------- | -------------- |
+| role  | bytes32 | role to query  |
 | index | uint256 | index to query |
 
-### _getRoleMemberCount
+### \_getRoleMemberCount
 
 ```solidity
 function _getRoleMemberCount(bytes32 role) internal view virtual returns (uint256)
@@ -325,8 +325,8 @@ query role for member count
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name | Type    | Description   |
+| ---- | ------- | ------------- |
 | role | bytes32 | role to query |
 
 ## AccessControlStorage
@@ -374,12 +374,12 @@ function layout() internal pure returns (struct AccessControlStorage.Layout l)
 event RoleAdminChanged(bytes32 role, bytes32 previousAdminRole, bytes32 newAdminRole)
 ```
 
-_Emitted when `newAdminRole` is set as ``role``'s admin role, replacing `previousAdminRole`
+\_Emitted when `newAdminRole` is set as `role`'s admin role, replacing `previousAdminRole`
 
 `DEFAULT_ADMIN_ROLE` is the starting admin for all roles, despite
 {RoleAdminChanged} not being emitted signaling this.
 
-_Available since v3.1.__
+\_Available since v3.1.\_\_
 
 ### RoleGranted
 
@@ -387,7 +387,7 @@ _Available since v3.1.__
 event RoleGranted(bytes32 role, address account, address sender)
 ```
 
-_Emitted when `account` is granted `role`.
+\_Emitted when `account` is granted `role`.
 
 `sender` is the account that originated the contract call, an admin role
 bearer except when using {AccessControl-_setupRole}._
@@ -398,11 +398,12 @@ bearer except when using {AccessControl-_setupRole}._
 event RoleRevoked(bytes32 role, address account, address sender)
 ```
 
-_Emitted when `account` is revoked `role`.
+\_Emitted when `account` is revoked `role`.
 
 `sender` is the account that originated the contract call:
-  - if using `revokeRole`, it is the admin role bearer
-  - if using `renounceRole`, it is the role bearer (i.e. `account`)_
+
+- if using `revokeRole`, it is the admin role bearer
+- if using `renounceRole`, it is the role bearer (i.e. `account`)\_
 
 ### hasRole
 
@@ -438,8 +439,8 @@ relinquish role
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name | Type    | Description        |
+| ---- | ------- | ------------------ |
 | role | bytes32 | role to relinquish |
 
 ### getRoleMember
@@ -472,25 +473,25 @@ together with {getRoleMember} to enumerate all bearers of a role.
 
 _derived from https://github.com/OpenZeppelin/openzeppelin-contracts (MIT license)_
 
-### ECDSA__InvalidS
+### ECDSA\_\_InvalidS
 
 ```solidity
 error ECDSA__InvalidS()
 ```
 
-### ECDSA__InvalidSignature
+### ECDSA\_\_InvalidSignature
 
 ```solidity
 error ECDSA__InvalidSignature()
 ```
 
-### ECDSA__InvalidSignatureLength
+### ECDSA\_\_InvalidSignatureLength
 
 ```solidity
 error ECDSA__InvalidSignatureLength()
 ```
 
-### ECDSA__InvalidV
+### ECDSA\_\_InvalidV
 
 ```solidity
 error ECDSA__InvalidV()
@@ -506,16 +507,16 @@ recover signer of hashed message from signature
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| hash | bytes32 | hashed data payload |
-| signature | bytes | signed data payload |
+| Name      | Type    | Description         |
+| --------- | ------- | ------------------- |
+| hash      | bytes32 | hashed data payload |
+| signature | bytes   | signed data payload |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | address | recovered message signer |
+| Name | Type    | Description              |
+| ---- | ------- | ------------------------ |
+| [0]  | address | recovered message signer |
 
 ### recover
 
@@ -527,18 +528,18 @@ recover signer of hashed message from signature v, r, and s values
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name | Type    | Description         |
+| ---- | ------- | ------------------- |
 | hash | bytes32 | hashed data payload |
-| v | uint8 | signature "v" value |
-| r | bytes32 | signature "r" value |
-| s | bytes32 | signature "s" value |
+| v    | uint8   | signature "v" value |
+| r    | bytes32 | signature "r" value |
+| s    | bytes32 | signature "s" value |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | address | recovered message signer |
+| Name | Type    | Description              |
+| ---- | ------- | ------------------------ |
+| [0]  | address | recovered message signer |
 
 ### toEthSignedMessageHash
 
@@ -550,15 +551,15 @@ generate an "Ethereum Signed Message" in the format returned by the eth_sign JSO
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name | Type    | Description         |
+| ---- | ------- | ------------------- |
 | hash | bytes32 | hashed data payload |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | bytes32 | signed message hash |
+| Name | Type    | Description         |
+| ---- | ------- | ------------------- |
+| [0]  | bytes32 | signed message hash |
 
 ## ECDSAMock
 
@@ -603,15 +604,15 @@ implementation of EIP712Domain struct type excludes the optional salt parameter_
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| nameHash | bytes32 | hash of human-readable signing domain name |
-| versionHash | bytes32 | hash of signing domain version |
+| Name        | Type    | Description                                |
+| ----------- | ------- | ------------------------------------------ |
+| nameHash    | bytes32 | hash of human-readable signing domain name |
+| versionHash | bytes32 | hash of signing domain version             |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name            | Type    | Description      |
+| --------------- | ------- | ---------------- |
 | domainSeparator | bytes32 | domain separator |
 
 ## EIP712Mock
@@ -636,17 +637,17 @@ verify whether given leaf is contained within Merkle tree defined by given root
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| proof | bytes32[] | proof that Merkle tree contains given leaf |
-| root | bytes32 | Merkle tree root |
-| leaf | bytes32 | element whose presence in Merkle tree to prove |
+| Name  | Type      | Description                                    |
+| ----- | --------- | ---------------------------------------------- |
+| proof | bytes32[] | proof that Merkle tree contains given leaf     |
+| root  | bytes32   | Merkle tree root                               |
+| leaf  | bytes32   | element whose presence in Merkle tree to prove |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | bool | whether leaf is proven to be contained within Merkle tree defined by root |
+| Name | Type | Description                                                               |
+| ---- | ---- | ------------------------------------------------------------------------- |
+| [0]  | bool | whether leaf is proven to be contained within Merkle tree defined by root |
 
 ## MerkleProofMock
 
@@ -1040,7 +1041,7 @@ struct Uint256List {
 }
 ```
 
-### DoublyLinkedList__InvalidInput
+### DoublyLinkedList\_\_InvalidInput
 
 ```solidity
 error DoublyLinkedList__InvalidInput()
@@ -1048,7 +1049,7 @@ error DoublyLinkedList__InvalidInput()
 
 indicate that an attempt was made to insert 0 into a list
 
-### DoublyLinkedList__NonExistentEntry
+### DoublyLinkedList\_\_NonExistentEntry
 
 ```solidity
 error DoublyLinkedList__NonExistentEntry()
@@ -1462,13 +1463,13 @@ function replace(uint256 oldValue, uint256 newValue) external returns (bool)
 
 _derived from https://github.com/OpenZeppelin/openzeppelin-contracts (MIT license)_
 
-### EnumerableMap__IndexOutOfBounds
+### EnumerableMap\_\_IndexOutOfBounds
 
 ```solidity
 error EnumerableMap__IndexOutOfBounds()
 ```
 
-### EnumerableMap__NonExistentKey
+### EnumerableMap\_\_NonExistentKey
 
 ```solidity
 error EnumerableMap__NonExistentKey()
@@ -1744,7 +1745,7 @@ function values() external view returns (address[] valuesOut)
 
 _derived from https://github.com/OpenZeppelin/openzeppelin-contracts (MIT license)_
 
-### EnumerableSet__IndexOutOfBounds
+### EnumerableSet\_\_IndexOutOfBounds
 
 ```solidity
 error EnumerableSet__IndexOutOfBounds()
@@ -2079,14 +2080,14 @@ query number of elements contained in tree
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| t | struct IncrementalMerkleTree.Tree | Tree struct storage reference |
+| Name | Type                              | Description                   |
+| ---- | --------------------------------- | ----------------------------- |
+| t    | struct IncrementalMerkleTree.Tree | Tree struct storage reference |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name     | Type    | Description  |
+| -------- | ------- | ------------ |
 | treeSize | uint256 | size of tree |
 
 ### height
@@ -2101,15 +2102,15 @@ _conventional zero-indexed height would require the use of signed integers, so h
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| t | struct IncrementalMerkleTree.Tree | Tree struct storage reference |
+| Name | Type                              | Description                   |
+| ---- | --------------------------------- | ----------------------------- |
+| t    | struct IncrementalMerkleTree.Tree | Tree struct storage reference |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint256 | one-indexed height of tree |
+| Name | Type    | Description                |
+| ---- | ------- | -------------------------- |
+| [0]  | uint256 | one-indexed height of tree |
 
 ### root
 
@@ -2121,15 +2122,15 @@ query Merkle root
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| t | struct IncrementalMerkleTree.Tree | Tree struct storage reference |
+| Name | Type                              | Description                   |
+| ---- | --------------------------------- | ----------------------------- |
+| t    | struct IncrementalMerkleTree.Tree | Tree struct storage reference |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| hash | bytes32 | root hash |
+| Name | Type    | Description |
+| ---- | ------- | ----------- |
+| hash | bytes32 | root hash   |
 
 ### at
 
@@ -2147,10 +2148,10 @@ add new element to tree
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| t | struct IncrementalMerkleTree.Tree | Tree struct storage reference |
-| hash | bytes32 | to add |
+| Name | Type                              | Description                   |
+| ---- | --------------------------------- | ----------------------------- |
+| t    | struct IncrementalMerkleTree.Tree | Tree struct storage reference |
+| hash | bytes32                           | to add                        |
 
 ### pop
 
@@ -2168,11 +2169,11 @@ update existing element in tree
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| t | struct IncrementalMerkleTree.Tree | Tree struct storage reference |
-| index | uint256 | index to update |
-| hash | bytes32 | new hash to add |
+| Name  | Type                              | Description                   |
+| ----- | --------------------------------- | ----------------------------- |
+| t     | struct IncrementalMerkleTree.Tree | Tree struct storage reference |
+| index | uint256                           | index to update               |
+| hash  | bytes32                           | new hash to add               |
 
 ## IncrementalMerkleTreeMock
 
@@ -2229,19 +2230,19 @@ function supportsInterface(bytes4 interfaceId) external view returns (bool)
 Query if a contract implements an interface
 
 _Interface identification is specified in ERC-165. This function
- uses less than 30,000 gas._
+uses less than 30,000 gas._
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name        | Type   | Description                                       |
+| ----------- | ------ | ------------------------------------------------- |
 | interfaceId | bytes4 | The interface identifier, as specified in ERC-165 |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | bool | `true` if the contract implements `interfaceId` and  `interfaceId` is not 0xffffffff, `false` otherwise |
+| Name | Type | Description                                                                                            |
+| ---- | ---- | ------------------------------------------------------------------------------------------------------ |
+| [0]  | bool | `true` if the contract implements `interfaceId` and `interfaceId` is not 0xffffffff, `false` otherwise |
 
 ## ERC165Storage
 
@@ -2290,19 +2291,19 @@ function supportsInterface(bytes4 interfaceId) external view returns (bool)
 Query if a contract implements an interface
 
 _Interface identification is specified in ERC-165. This function
- uses less than 30,000 gas._
+uses less than 30,000 gas._
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name        | Type   | Description                                       |
+| ----------- | ------ | ------------------------------------------------- |
 | interfaceId | bytes4 | The interface identifier, as specified in ERC-165 |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | bool | `true` if the contract implements `interfaceId` and  `interfaceId` is not 0xffffffff, `false` otherwise |
+| Name | Type | Description                                                                                            |
+| ---- | ---- | ------------------------------------------------------------------------------------------------------ |
+| [0]  | bool | `true` if the contract implements `interfaceId` and `interfaceId` is not 0xffffffff, `false` otherwise |
 
 ## IPausable
 
@@ -2332,8 +2333,8 @@ query whether contract is paused
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name   | Type | Description                |
+| ------ | ---- | -------------------------- |
 | status | bool | whether contract is paused |
 
 ## Pausable
@@ -2348,8 +2349,8 @@ query whether contract is paused
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name   | Type | Description                |
+| ------ | ---- | -------------------------- |
 | status | bool | whether contract is paused |
 
 ## PausableInternal
@@ -2366,7 +2367,7 @@ modifier whenNotPaused()
 modifier whenPaused()
 ```
 
-### _paused
+### \_paused
 
 ```solidity
 function _paused() internal view virtual returns (bool status)
@@ -2376,11 +2377,11 @@ query whether contract is paused
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name   | Type | Description                |
+| ------ | ---- | -------------------------- |
 | status | bool | whether contract is paused |
 
-### _pause
+### \_pause
 
 ```solidity
 function _pause() internal virtual
@@ -2388,7 +2389,7 @@ function _pause() internal virtual
 
 Triggers paused state, when contract is unpaused.
 
-### _unpause
+### \_unpause
 
 ```solidity
 function _unpause() internal virtual
@@ -2420,7 +2421,7 @@ function layout() internal pure returns (struct PausableStorage.Layout l)
 
 ## ReentrancyGuard
 
-_Contract module that helps prevent reentrant calls to a function.
+\_Contract module that helps prevent reentrant calls to a function.
 
 Inheriting from `ReentrancyGuard` will make the {nonReentrant} modifier
 available, which can be applied to functions to make sure there are no nested
@@ -2433,7 +2434,7 @@ points to them.
 
 TIP: If you would like to learn more about reentrancy and alternative ways
 to protect against it, check out our blog post
-https://blog.openzeppelin.com/reentrancy-after-istanbul/[Reentrancy After Istanbul]._
+https://blog.openzeppelin.com/reentrancy-after-istanbul/[Reentrancy After Istanbul].\_
 
 ### nonReentrant
 
@@ -2441,7 +2442,7 @@ https://blog.openzeppelin.com/reentrancy-after-istanbul/[Reentrancy After Istanb
 modifier nonReentrant()
 ```
 
-### _lockReentrancyGuard
+### \_lockReentrancyGuard
 
 ```solidity
 function _lockReentrancyGuard() internal virtual
@@ -2449,7 +2450,7 @@ function _lockReentrancyGuard() internal virtual
 
 lock functions that use the nonReentrant modifier
 
-### _unlockReentrancyGuard
+### \_unlockReentrancyGuard
 
 ```solidity
 function _unlockReentrancyGuard() internal virtual
@@ -2489,10 +2490,10 @@ _see https://eips.ethereum.org/EIPS/eip-20_
 event Transfer(address from, address to, uint256 value)
 ```
 
-_Emitted when `value` tokens are moved from one account (`from`) to
+\_Emitted when `value` tokens are moved from one account (`from`) to
 another (`to`).
 
-Note that `value` may be zero._
+Note that `value` may be zero.\_
 
 ### Approval
 
@@ -2513,9 +2514,9 @@ query the total minted token supply
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint256 | token supply |
+| Name | Type    | Description  |
+| ---- | ------- | ------------ |
+| [0]  | uint256 | token supply |
 
 ### balanceOf
 
@@ -2527,15 +2528,15 @@ query the token balance of given account
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name    | Type    | Description      |
+| ------- | ------- | ---------------- |
 | account | address | address to query |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint256 | token balance |
+| Name | Type    | Description   |
+| ---- | ------- | ------------- |
+| [0]  | uint256 | token balance |
 
 ### allowance
 
@@ -2547,16 +2548,16 @@ query the allowance granted from given holder to given spender
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| holder | address | approver of allowance |
+| Name    | Type    | Description            |
+| ------- | ------- | ---------------------- |
+| holder  | address | approver of allowance  |
 | spender | address | recipient of allowance |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint256 | token allowance |
+| Name | Type    | Description     |
+| ---- | ------- | --------------- |
+| [0]  | uint256 | token allowance |
 
 ### approve
 
@@ -2570,16 +2571,16 @@ _prefer ERC20Extended functions to avoid transaction-ordering vulnerability (see
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| spender | address | recipient of allowance |
-| amount | uint256 | quantity of tokens approved for spending |
+| Name    | Type    | Description                              |
+| ------- | ------- | ---------------------------------------- |
+| spender | address | recipient of allowance                   |
+| amount  | uint256 | quantity of tokens approved for spending |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | bool | success status (always true; otherwise function should revert) |
+| Name | Type | Description                                                    |
+| ---- | ---- | -------------------------------------------------------------- |
+| [0]  | bool | success status (always true; otherwise function should revert) |
 
 ### transfer
 
@@ -2591,16 +2592,16 @@ transfer tokens to given recipient
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| recipient | address | beneficiary of token transfer |
-| amount | uint256 | quantity of tokens to transfer |
+| Name      | Type    | Description                    |
+| --------- | ------- | ------------------------------ |
+| recipient | address | beneficiary of token transfer  |
+| amount    | uint256 | quantity of tokens to transfer |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | bool | success status (always true; otherwise function should revert) |
+| Name | Type | Description                                                    |
+| ---- | ---- | -------------------------------------------------------------- |
+| [0]  | bool | success status (always true; otherwise function should revert) |
 
 ### transferFrom
 
@@ -2612,17 +2613,17 @@ transfer tokens to given recipient on behalf of given holder
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| holder | address | holder of tokens prior to transfer |
-| recipient | address | beneficiary of token transfer |
-| amount | uint256 | quantity of tokens to transfer |
+| Name      | Type    | Description                        |
+| --------- | ------- | ---------------------------------- |
+| holder    | address | holder of tokens prior to transfer |
+| recipient | address | beneficiary of token transfer      |
+| amount    | uint256 | quantity of tokens to transfer     |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | bool | success status (always true; otherwise function should revert) |
+| Name | Type | Description                                                    |
+| ---- | ---- | -------------------------------------------------------------- |
+| [0]  | bool | success status (always true; otherwise function should revert) |
 
 ## ERC20Base
 
@@ -2636,9 +2637,9 @@ query the total minted token supply
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint256 | token supply |
+| Name | Type    | Description  |
+| ---- | ------- | ------------ |
+| [0]  | uint256 | token supply |
 
 ### balanceOf
 
@@ -2682,7 +2683,7 @@ function transferFrom(address holder, address recipient, uint256 amount) externa
 
 ## ERC20BaseInternal
 
-### _totalSupply
+### \_totalSupply
 
 ```solidity
 function _totalSupply() internal view virtual returns (uint256)
@@ -2692,11 +2693,11 @@ query the total minted token supply
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint256 | token supply |
+| Name | Type    | Description  |
+| ---- | ------- | ------------ |
+| [0]  | uint256 | token supply |
 
-### _balanceOf
+### \_balanceOf
 
 ```solidity
 function _balanceOf(address account) internal view virtual returns (uint256)
@@ -2706,17 +2707,17 @@ query the token balance of given account
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name    | Type    | Description      |
+| ------- | ------- | ---------------- |
 | account | address | address to query |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint256 | token balance |
+| Name | Type    | Description   |
+| ---- | ------- | ------------- |
+| [0]  | uint256 | token balance |
 
-### _allowance
+### \_allowance
 
 ```solidity
 function _allowance(address holder, address spender) internal view virtual returns (uint256)
@@ -2726,18 +2727,18 @@ query the allowance granted from given holder to given spender
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| holder | address | approver of allowance |
+| Name    | Type    | Description            |
+| ------- | ------- | ---------------------- |
+| holder  | address | approver of allowance  |
 | spender | address | recipient of allowance |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint256 | token allowance |
+| Name | Type    | Description     |
+| ---- | ------- | --------------- |
+| [0]  | uint256 | token allowance |
 
-### _approve
+### \_approve
 
 ```solidity
 function _approve(address holder, address spender, uint256 amount) internal virtual returns (bool)
@@ -2747,19 +2748,19 @@ enable spender to spend tokens on behalf of holder
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| holder | address | address on whose behalf tokens may be spent |
-| spender | address | recipient of allowance |
-| amount | uint256 | quantity of tokens approved for spending |
+| Name    | Type    | Description                                 |
+| ------- | ------- | ------------------------------------------- |
+| holder  | address | address on whose behalf tokens may be spent |
+| spender | address | recipient of allowance                      |
+| amount  | uint256 | quantity of tokens approved for spending    |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | bool | success status (always true; otherwise function should revert) |
+| Name | Type | Description                                                    |
+| ---- | ---- | -------------------------------------------------------------- |
+| [0]  | bool | success status (always true; otherwise function should revert) |
 
-### _decreaseAllowance
+### \_decreaseAllowance
 
 ```solidity
 function _decreaseAllowance(address holder, address spender, uint256 amount) internal
@@ -2769,26 +2770,26 @@ decrease spend amount granted by holder to spender
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| holder | address | address on whose behalf tokens may be spent |
-| spender | address | address whose allowance to decrease |
-| amount | uint256 | quantity by which to decrease allowance |
+| Name    | Type    | Description                                 |
+| ------- | ------- | ------------------------------------------- |
+| holder  | address | address on whose behalf tokens may be spent |
+| spender | address | address whose allowance to decrease         |
+| amount  | uint256 | quantity by which to decrease allowance     |
 
-### _spendAllowance
+### \_spendAllowance
 
 ```solidity
 function _spendAllowance(address holder, address spender, uint256 amount) internal virtual
 ```
 
-_Updates `holder` s allowance for `spender` based on spent `amount`.
+\_Updates `holder` s allowance for `spender` based on spent `amount`.
 
 Does not update the allowance amount in case of infinite allowance.
 Revert if not enough allowance is available.
 
-Might emit an {Approval} event._
+Might emit an {Approval} event.\_
 
-### _mint
+### \_mint
 
 ```solidity
 function _mint(address account, uint256 amount) internal virtual
@@ -2798,12 +2799,12 @@ mint tokens for given account
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name    | Type    | Description                |
+| ------- | ------- | -------------------------- |
 | account | address | recipient of minted tokens |
-| amount | uint256 | quantity of tokens minted |
+| amount  | uint256 | quantity of tokens minted  |
 
-### _burn
+### \_burn
 
 ```solidity
 function _burn(address account, uint256 amount) internal virtual
@@ -2813,12 +2814,12 @@ burn tokens held by given account
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| account | address | holder of burned tokens |
-| amount | uint256 | quantity of tokens burned |
+| Name    | Type    | Description               |
+| ------- | ------- | ------------------------- |
+| account | address | holder of burned tokens   |
+| amount  | uint256 | quantity of tokens burned |
 
-### _transfer
+### \_transfer
 
 ```solidity
 function _transfer(address holder, address recipient, uint256 amount) internal virtual returns (bool)
@@ -2828,19 +2829,19 @@ transfer tokens from holder to recipient
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| holder | address | owner of tokens to be transferred |
-| recipient | address | beneficiary of transfer |
-| amount | uint256 | quantity of tokens transferred |
+| Name      | Type    | Description                       |
+| --------- | ------- | --------------------------------- |
+| holder    | address | owner of tokens to be transferred |
+| recipient | address | beneficiary of transfer           |
+| amount    | uint256 | quantity of tokens transferred    |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | bool | success status (always true; otherwise function should revert) |
+| Name | Type | Description                                                    |
+| ---- | ---- | -------------------------------------------------------------- |
+| [0]  | bool | success status (always true; otherwise function should revert) |
 
-### _transferFrom
+### \_transferFrom
 
 ```solidity
 function _transferFrom(address holder, address recipient, uint256 amount) internal virtual returns (bool)
@@ -2850,19 +2851,19 @@ transfer tokens to given recipient on behalf of given holder
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| holder | address | holder of tokens prior to transfer |
-| recipient | address | beneficiary of token transfer |
-| amount | uint256 | quantity of tokens to transfer |
+| Name      | Type    | Description                        |
+| --------- | ------- | ---------------------------------- |
+| holder    | address | holder of tokens prior to transfer |
+| recipient | address | beneficiary of token transfer      |
+| amount    | uint256 | quantity of tokens to transfer     |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | bool | success status (always true; otherwise function should revert) |
+| Name | Type | Description                                                    |
+| ---- | ---- | -------------------------------------------------------------- |
+| [0]  | bool | success status (always true; otherwise function should revert) |
 
-### _beforeTokenTransfer
+### \_beforeTokenTransfer
 
 ```solidity
 function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual
@@ -2874,10 +2875,10 @@ _function should be overridden and new implementation must call super_
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| from | address | sender of tokens |
-| to | address | receiver of tokens |
+| Name   | Type    | Description                    |
+| ------ | ------- | ------------------------------ |
+| from   | address | sender of tokens               |
+| to     | address | receiver of tokens             |
 | amount | uint256 | quantity of tokens transferred |
 
 ## ERC20BaseStorage
@@ -2906,55 +2907,55 @@ function layout() internal pure returns (struct ERC20BaseStorage.Layout l)
 
 ## IERC20Base
 
-### ERC20Base__ApproveFromZeroAddress
+### ERC20Base\_\_ApproveFromZeroAddress
 
 ```solidity
 error ERC20Base__ApproveFromZeroAddress()
 ```
 
-### ERC20Base__ApproveToZeroAddress
+### ERC20Base\_\_ApproveToZeroAddress
 
 ```solidity
 error ERC20Base__ApproveToZeroAddress()
 ```
 
-### ERC20Base__BurnExceedsBalance
+### ERC20Base\_\_BurnExceedsBalance
 
 ```solidity
 error ERC20Base__BurnExceedsBalance()
 ```
 
-### ERC20Base__BurnFromZeroAddress
+### ERC20Base\_\_BurnFromZeroAddress
 
 ```solidity
 error ERC20Base__BurnFromZeroAddress()
 ```
 
-### ERC20Base__InsufficientAllowance
+### ERC20Base\_\_InsufficientAllowance
 
 ```solidity
 error ERC20Base__InsufficientAllowance()
 ```
 
-### ERC20Base__MintToZeroAddress
+### ERC20Base\_\_MintToZeroAddress
 
 ```solidity
 error ERC20Base__MintToZeroAddress()
 ```
 
-### ERC20Base__TransferExceedsBalance
+### ERC20Base\_\_TransferExceedsBalance
 
 ```solidity
 error ERC20Base__TransferExceedsBalance()
 ```
 
-### ERC20Base__TransferFromZeroAddress
+### ERC20Base\_\_TransferFromZeroAddress
 
 ```solidity
 error ERC20Base__TransferFromZeroAddress()
 ```
 
-### ERC20Base__TransferToZeroAddress
+### ERC20Base\_\_TransferToZeroAddress
 
 ```solidity
 error ERC20Base__TransferToZeroAddress()
@@ -2972,8 +2973,8 @@ Destroys `amount` tokens from the caller.
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name   | Type    | Description                   |
+| ------ | ------- | ----------------------------- |
 | amount | uint256 | The amount of tokens to burn. |
 
 ### burnFrom
@@ -2987,14 +2988,14 @@ allowance.
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| account | address | The address whose tokens will be burnt. |
-| amount | uint256 | The amount of tokens to burn. Requirements: - the caller must have allowance for ``accounts``'s tokens of at least `amount`. |
+| Name    | Type    | Description                                                                                                                |
+| ------- | ------- | -------------------------------------------------------------------------------------------------------------------------- |
+| account | address | The address whose tokens will be burnt.                                                                                    |
+| amount  | uint256 | The amount of tokens to burn. Requirements: - the caller must have allowance for `accounts`'s tokens of at least `amount`. |
 
 ## ERC20BurnableInternal
 
-### _burnFrom
+### \_burnFrom
 
 ```solidity
 function _burnFrom(address account, uint256 amount) public virtual
@@ -3012,9 +3013,9 @@ return token name
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | string | token name |
+| Name | Type   | Description |
+| ---- | ------ | ----------- |
+| [0]  | string | token name  |
 
 ### symbol
 
@@ -3026,9 +3027,9 @@ return token symbol
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | string | token symbol |
+| Name | Type   | Description  |
+| ---- | ------ | ------------ |
+| [0]  | string | token symbol |
 
 ### decimals
 
@@ -3040,13 +3041,13 @@ return token decimals, generally used only for display purposes
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint8 | token decimals |
+| Name | Type  | Description    |
+| ---- | ----- | -------------- |
+| [0]  | uint8 | token decimals |
 
 ## ERC20MetadataInternal
 
-### _name
+### \_name
 
 ```solidity
 function _name() internal view virtual returns (string)
@@ -3056,11 +3057,11 @@ return token name
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | string | token name |
+| Name | Type   | Description |
+| ---- | ------ | ----------- |
+| [0]  | string | token name  |
 
-### _symbol
+### \_symbol
 
 ```solidity
 function _symbol() internal view virtual returns (string)
@@ -3070,11 +3071,11 @@ return token symbol
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | string | token symbol |
+| Name | Type   | Description  |
+| ---- | ------ | ------------ |
+| [0]  | string | token symbol |
 
-### _decimals
+### \_decimals
 
 ```solidity
 function _decimals() internal view virtual returns (uint8)
@@ -3084,23 +3085,23 @@ return token decimals, generally used only for display purposes
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint8 | token decimals |
+| Name | Type  | Description    |
+| ---- | ----- | -------------- |
+| [0]  | uint8 | token decimals |
 
-### _setName
+### \_setName
 
 ```solidity
 function _setName(string name) internal virtual
 ```
 
-### _setSymbol
+### \_setSymbol
 
 ```solidity
 function _setSymbol(string symbol) internal virtual
 ```
 
-### _setDecimals
+### \_setDecimals
 
 ```solidity
 function _setDecimals(uint8 decimals) internal virtual
@@ -3142,16 +3143,16 @@ Query the token balance of given account at given snapshot id
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| account | address | address to query |
+| Name       | Type    | Description          |
+| ---------- | ------- | -------------------- |
+| account    | address | address to query     |
 | snapshotId | uint256 | snapshot id to query |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint256 | token balance |
+| Name | Type    | Description   |
+| ---- | ------- | ------------- |
+| [0]  | uint256 | token balance |
 
 ### totalSupplyAt
 
@@ -3163,25 +3164,25 @@ Query the total minted token supply at given snapshot id
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name       | Type    | Description          |
+| ---------- | ------- | -------------------- |
 | snapshotId | uint256 | snapshot id to query |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint256 | token supply |
+| Name | Type    | Description  |
+| ---- | ------- | ------------ |
+| [0]  | uint256 | token supply |
 
 ## ERC20SnapshotInternal
 
-### _snapshot
+### \_snapshot
 
 ```solidity
 function _snapshot() internal virtual returns (uint256)
 ```
 
-### _beforeTokenTransfer
+### \_beforeTokenTransfer
 
 ```solidity
 function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual
@@ -3193,10 +3194,10 @@ _function should be overridden and new implementation must call super_
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| from | address | sender of tokens |
-| to | address | receiver of tokens |
+| Name   | Type    | Description                    |
+| ------ | ------- | ------------------------------ |
+| from   | address | sender of tokens               |
+| to     | address | receiver of tokens             |
 | amount | uint256 | quantity of tokens transferred |
 
 ## ERC20SnapshotStorage
@@ -3246,8 +3247,8 @@ Destroys `amount` tokens from the caller.
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name   | Type    | Description                   |
+| ------ | ------- | ----------------------------- |
 | amount | uint256 | The amount of tokens to burn. |
 
 ### burnFrom
@@ -3261,10 +3262,10 @@ allowance.
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| account | address | The address whose tokens will be burnt. |
-| amount | uint256 | The amount of tokens to burn. Requirements: - the caller must have allowance for ``accounts``'s tokens of at least `amount`. |
+| Name    | Type    | Description                                                                                                                |
+| ------- | ------- | -------------------------------------------------------------------------------------------------------------------------- |
+| account | address | The address whose tokens will be burnt.                                                                                    |
+| amount  | uint256 | The amount of tokens to burn. Requirements: - the caller must have allowance for `accounts`'s tokens of at least `amount`. |
 
 ## IERC20Metadata
 
@@ -3278,9 +3279,9 @@ return token name
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | string | token name |
+| Name | Type   | Description |
+| ---- | ------ | ----------- |
+| [0]  | string | token name  |
 
 ### symbol
 
@@ -3292,9 +3293,9 @@ return token symbol
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | string | token symbol |
+| Name | Type   | Description  |
+| ---- | ------ | ------------ |
+| [0]  | string | token symbol |
 
 ### decimals
 
@@ -3306,19 +3307,19 @@ return token decimals, generally used only for display purposes
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint8 | token decimals |
+| Name | Type  | Description    |
+| ---- | ----- | -------------- |
+| [0]  | uint8 | token decimals |
 
 ## IERC20Snapshot
 
-### ERC20Snapshot__SnapshotIdDoesNotExists
+### ERC20Snapshot\_\_SnapshotIdDoesNotExists
 
 ```solidity
 error ERC20Snapshot__SnapshotIdDoesNotExists()
 ```
 
-### ERC20Snapshot__SnapshotIdIsZero
+### ERC20Snapshot\_\_SnapshotIdIsZero
 
 ```solidity
 error ERC20Snapshot__SnapshotIdIsZero()
@@ -3330,7 +3331,7 @@ error ERC20Snapshot__SnapshotIdIsZero()
 event Snapshot(uint256 id)
 ```
 
-_Emitted by {_snapshot} when a snapshot identified by `id` is created._
+_Emitted by {\_snapshot} when a snapshot identified by `id` is created._
 
 ### balanceOfAt
 
@@ -3342,16 +3343,16 @@ Query the token balance of given account at given snapshot id
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| account | address | address to query |
+| Name       | Type    | Description          |
+| ---------- | ------- | -------------------- |
+| account    | address | address to query     |
 | snapshotId | uint256 | snapshot id to query |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint256 | token balance |
+| Name | Type    | Description   |
+| ---- | ------- | ------------- |
+| [0]  | uint256 | token balance |
 
 ### totalSupplyAt
 
@@ -3363,31 +3364,31 @@ Query the total minted token supply at given snapshot id
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name       | Type    | Description          |
+| ---------- | ------- | -------------------- |
 | snapshotId | uint256 | snapshot id to query |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint256 | token supply |
+| Name | Type    | Description  |
+| ---- | ------- | ------------ |
+| [0]  | uint256 | token supply |
 
 ## AddressUtils
 
-### AddressUtils__InsufficientBalance
+### AddressUtils\_\_InsufficientBalance
 
 ```solidity
 error AddressUtils__InsufficientBalance()
 ```
 
-### AddressUtils__NotContract
+### AddressUtils\_\_NotContract
 
 ```solidity
 error AddressUtils__NotContract()
 ```
 
-### AddressUtils__SendValueFailed
+### AddressUtils\_\_SendValueFailed
 
 ```solidity
 error AddressUtils__SendValueFailed()
@@ -3447,20 +3448,20 @@ _derived from https://github.com/nomad-xyz/ExcessivelySafeCall (MIT License)_
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| target | address | recipient of call |
-| gasAmount | uint256 | gas allowance for call |
-| value | uint256 | native token value to include in call |
-| maxCopy | uint16 | maximum number of bytes to copy from return data |
-| data | bytes | encoded call data |
+| Name      | Type    | Description                                      |
+| --------- | ------- | ------------------------------------------------ |
+| target    | address | recipient of call                                |
+| gasAmount | uint256 | gas allowance for call                           |
+| value     | uint256 | native token value to include in call            |
+| maxCopy   | uint16  | maximum number of bytes to copy from return data |
+| data      | bytes   | encoded call data                                |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| success | bool | whether call is successful |
-| returnData | bytes | copied return data |
+| Name       | Type  | Description                |
+| ---------- | ----- | -------------------------- |
+| success    | bool  | whether call is successful |
+| returnData | bytes | copied return data         |
 
 ## AddressUtilsMock
 
@@ -3518,15 +3519,15 @@ get minimum value in given array
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name  | Type      | Description     |
+| ----- | --------- | --------------- |
 | array | bytes32[] | array to search |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | bytes32 | minimum value |
+| Name | Type    | Description   |
+| ---- | ------- | ------------- |
+| [0]  | bytes32 | minimum value |
 
 ### min
 
@@ -3538,15 +3539,15 @@ get minimum value in given array
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name  | Type      | Description     |
+| ----- | --------- | --------------- |
 | array | address[] | array to search |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | address | minimum value |
+| Name | Type    | Description   |
+| ---- | ------- | ------------- |
+| [0]  | address | minimum value |
 
 ### min
 
@@ -3558,15 +3559,15 @@ get minimum value in given array
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name  | Type      | Description     |
+| ----- | --------- | --------------- |
 | array | uint256[] | array to search |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint256 | minimum value |
+| Name | Type    | Description   |
+| ---- | ------- | ------------- |
+| [0]  | uint256 | minimum value |
 
 ### max
 
@@ -3578,15 +3579,15 @@ get maximum value in given array
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name  | Type      | Description     |
+| ----- | --------- | --------------- |
 | array | bytes32[] | array to search |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | bytes32 | maximum value |
+| Name | Type    | Description   |
+| ---- | ------- | ------------- |
+| [0]  | bytes32 | maximum value |
 
 ### max
 
@@ -3598,15 +3599,15 @@ get maximum value in given array
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name  | Type      | Description     |
+| ----- | --------- | --------------- |
 | array | address[] | array to search |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | address | maximum value |
+| Name | Type    | Description   |
+| ---- | ------- | ------------- |
+| [0]  | address | maximum value |
 
 ### max
 
@@ -3618,15 +3619,15 @@ get maximum value in given array
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name  | Type      | Description     |
+| ----- | --------- | --------------- |
 | array | uint256[] | array to search |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint256 | maximum value |
+| Name | Type    | Description   |
+| ---- | ------- | ------------- |
+| [0]  | uint256 | maximum value |
 
 ## ArrayUtilsMock
 
@@ -3678,14 +3679,14 @@ batch function calls to the contract and return the results of each
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name | Type    | Description                          |
+| ---- | ------- | ------------------------------------ |
 | data | bytes[] | array of function call data payloads |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name    | Type    | Description                    |
+| ------- | ------- | ------------------------------ |
 | results | bytes[] | array of function call results |
 
 ## Math
@@ -3700,15 +3701,15 @@ calculate the absolute value of a number
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| a | int256 | number whose absoluve value to calculate |
+| Name | Type   | Description                              |
+| ---- | ------ | ---------------------------------------- |
+| a    | int256 | number whose absoluve value to calculate |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint256 | absolute value |
+| Name | Type    | Description    |
+| ---- | ------- | -------------- |
+| [0]  | uint256 | absolute value |
 
 ### max
 
@@ -3720,16 +3721,16 @@ select the greater of two numbers
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| a | uint256 | first number |
-| b | uint256 | second number |
+| Name | Type    | Description   |
+| ---- | ------- | ------------- |
+| a    | uint256 | first number  |
+| b    | uint256 | second number |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint256 | greater number |
+| Name | Type    | Description    |
+| ---- | ------- | -------------- |
+| [0]  | uint256 | greater number |
 
 ### min
 
@@ -3741,16 +3742,16 @@ select the lesser of two numbers
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| a | uint256 | first number |
-| b | uint256 | second number |
+| Name | Type    | Description   |
+| ---- | ------- | ------------- |
+| a    | uint256 | first number  |
+| b    | uint256 | second number |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint256 | lesser number |
+| Name | Type    | Description   |
+| ---- | ------- | ------------- |
+| [0]  | uint256 | lesser number |
 
 ### average
 
@@ -3764,16 +3765,16 @@ _derived from https://github.com/OpenZeppelin/openzeppelin-contracts (MIT licens
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| a | uint256 | first number |
-| b | uint256 | second number |
+| Name | Type    | Description   |
+| ---- | ------- | ------------- |
+| a    | uint256 | first number  |
+| b    | uint256 | second number |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint256 | mean value |
+| Name | Type    | Description |
+| ---- | ------- | ----------- |
+| [0]  | uint256 | mean value  |
 
 ### sqrt
 
@@ -3787,15 +3788,15 @@ _uses Babylonian method (https://en.wikipedia.org/wiki/Methods_of_computing_squa
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| x | uint256 | input number |
+| Name | Type    | Description  |
+| ---- | ------- | ------------ |
+| x    | uint256 | input number |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| y | uint256 | square root |
+| Name | Type    | Description |
+| ---- | ------- | ----------- |
+| y    | uint256 | square root |
 
 ## MathMock
 
@@ -3841,14 +3842,14 @@ batch function calls to the contract and return the results of each
 
 #### Parameters
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name | Type    | Description                          |
+| ---- | ------- | ------------------------------------ |
 | data | bytes[] | array of function call data payloads |
 
 #### Return Values
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+| Name    | Type    | Description                    |
+| ------- | ------- | ------------------------------ |
 | results | bytes[] | array of function call results |
 
 ## MulticallMock
@@ -3869,13 +3870,13 @@ function callRevertTest() external pure
 
 _derived from https://github.com/OpenZeppelin/openzeppelin-contracts (MIT license)_
 
-### SafeCast__NegativeValue
+### SafeCast\_\_NegativeValue
 
 ```solidity
 error SafeCast__NegativeValue()
 ```
 
-### SafeCast__ValueDoesNotFit
+### SafeCast\_\_ValueDoesNotFit
 
 ```solidity
 error SafeCast__ValueDoesNotFit()
@@ -3969,7 +3970,7 @@ function toInt256(uint256 value) internal pure returns (int256)
 
 _derived from https://github.com/OpenZeppelin/openzeppelin-contracts/ (MIT license)_
 
-### UintUtils__InsufficientHexLength
+### UintUtils\_\_InsufficientHexLength
 
 ```solidity
 error UintUtils__InsufficientHexLength()
@@ -4036,4 +4037,3 @@ function toHexString(uint256 value) external pure returns (string)
 ```solidity
 function toHexString(uint256 value, uint256 length) external pure returns (string)
 ```
-
