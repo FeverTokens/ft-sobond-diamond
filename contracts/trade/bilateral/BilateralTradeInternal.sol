@@ -8,12 +8,32 @@ import { BilateralTradeStorage } from "./BilateralTradeStorage.sol";
 import { IRegister } from "../../register/IRegister.sol";
 
 abstract contract BilateralTradeInternal is IBilateralTradeInternal {
+    function _initialize(IRegister register_, address _buyer) internal {
+        BilateralTradeStorage.Layout storage l = BilateralTradeStorage.layout();
+        require(
+            register_.investorsAllowed(msg.sender) ||
+                register_.isBnD(msg.sender),
+            "Sender must be a valid investor"
+        );
+
+        require(
+            register_.investorsAllowed(_buyer),
+            "Buyer must be a valid investor"
+        );
+
+        l.register = register_;
+        l.sellerAccount = msg.sender;
+        l.details.buyer = _buyer;
+        l.status = TradeStatus.Draft;
+        emit NotifyTrade(msg.sender, _buyer, l.status, 0);
+    }
+
     function _register() internal view returns (IRegister) {
         BilateralTradeStorage.Layout storage l = BilateralTradeStorage.layout();
         return l.register;
     }
 
-    function _status() internal view returns (Status) {
+    function _status() internal view returns (TradeStatus) {
         BilateralTradeStorage.Layout storage l = BilateralTradeStorage.layout();
 
         return l.status;
@@ -45,14 +65,33 @@ abstract contract BilateralTradeInternal is IBilateralTradeInternal {
 
     function _setDetails(TradeDetail memory _details) internal {
         BilateralTradeStorage.Layout storage l = BilateralTradeStorage.layout();
+        require(
+            msg.sender == l.sellerAccount,
+            "Only the seller can update this trade"
+        );
+        require(
+            l.status == TradeStatus.Draft,
+            "Cannot change the trade details unless in draft status"
+        );
+        require(
+            l.register.investorsAllowed(_details.buyer),
+            "Buyer must be a valid investor even on changing details"
+        );
 
         l.details = _details;
+        // an event needs to be generated to enable the back end to know that the trade has been changed
+        emit NotifyTrade(
+            l.sellerAccount,
+            _details.buyer,
+            l.status,
+            _details.quantity
+        );
     }
 
-    function _approve() internal returns (Status) {
+    function _approve() internal returns (TradeStatus) {
         BilateralTradeStorage.Layout storage l = BilateralTradeStorage.layout();
 
-        if (msg.sender == l.sellerAccount && l.status == Status.Draft) {
+        if (msg.sender == l.sellerAccount && l.status == TradeStatus.Draft) {
             require(l.details.quantity > 0, "quantity not defined");
 
             require(l.details.tradeDate > 0, "trade date not defined");
@@ -61,11 +100,7 @@ abstract contract BilateralTradeInternal is IBilateralTradeInternal {
             // But add the control that the value is defined
             require(l.details.valueDate > 0, "value date not defined");
 
-            // require(
-            //     details.valueDate >= details.tradeDate,
-            //     "value date not defined greater or equal than the trade date"
-            // );
-            l.status = Status.Pending;
+            l.status = TradeStatus.Pending;
 
             emit NotifyTrade(
                 l.sellerAccount,
@@ -77,16 +112,8 @@ abstract contract BilateralTradeInternal is IBilateralTradeInternal {
             return (l.status);
         }
 
-        if (msg.sender == l.details.buyer && l.status == Status.Pending) {
-            // require(
-            //     register.transferFrom(
-            //         sellerAccount,
-            //         details.buyer,
-            //         details.quantity
-            //     ),
-            //     "the transfer has failed"
-            // );
-            l.status = Status.Accepted;
+        if (msg.sender == l.details.buyer && l.status == TradeStatus.Pending) {
+            l.status = TradeStatus.Accepted;
 
             emit NotifyTrade(
                 l.sellerAccount,
@@ -106,11 +133,13 @@ abstract contract BilateralTradeInternal is IBilateralTradeInternal {
     function _reject() internal {
         BilateralTradeStorage.Layout storage l = BilateralTradeStorage.layout();
 
-        require(l.status != Status.Rejected, "Trade already rejected");
+        require(l.status != TradeStatus.Rejected, "Trade already rejected");
 
         // seller can cancel the trade at any active state before the trade is executed
-        if (msg.sender == l.sellerAccount && (l.status != Status.Executed)) {
-            l.status = Status.Rejected;
+        if (
+            msg.sender == l.sellerAccount && (l.status != TradeStatus.Executed)
+        ) {
+            l.status = TradeStatus.Rejected;
 
             emit NotifyTrade(
                 l.sellerAccount,
@@ -125,9 +154,10 @@ abstract contract BilateralTradeInternal is IBilateralTradeInternal {
         // buyer can cancel the trade when pending validation on his side or even after he has accepted the trade (but not when the seller prepares the trade (DRAFT))
         if (
             msg.sender == l.details.buyer &&
-            (l.status == Status.Pending || l.status == Status.Accepted)
+            (l.status == TradeStatus.Pending ||
+                l.status == TradeStatus.Accepted)
         ) {
-            l.status = Status.Rejected;
+            l.status = TradeStatus.Rejected;
 
             emit NotifyTrade(
                 l.sellerAccount,
@@ -151,11 +181,11 @@ abstract contract BilateralTradeInternal is IBilateralTradeInternal {
         );
 
         require(
-            l.status == Status.Accepted,
+            l.status == TradeStatus.Accepted,
             "The trade must be accepted by the buyer before"
         );
 
-        l.status = Status.Executed;
+        l.status = TradeStatus.Executed;
 
         // Actually make the transfer now
         bool success = l.register.transferFrom(

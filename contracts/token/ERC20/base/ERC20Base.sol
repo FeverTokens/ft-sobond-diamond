@@ -12,12 +12,14 @@ import { ERC20BaseInternal } from "./ERC20BaseInternal.sol";
  */
 abstract contract ERC20Base is IERC20Base, ERC20BaseInternal {
     /// @inheritdoc IERC20
-    function totalSupply() external view returns (uint256) {
+    function totalSupply() external view virtual returns (uint256) {
         return _totalSupply();
     }
 
     ///  @inheritdoc IERC20
-    function balanceOf(address account) external view returns (uint256) {
+    function balanceOf(
+        address account
+    ) external view virtual returns (uint256) {
         return _balanceOf(account);
     }
 
@@ -25,12 +27,15 @@ abstract contract ERC20Base is IERC20Base, ERC20BaseInternal {
     function allowance(
         address holder,
         address spender
-    ) external view returns (uint256) {
+    ) external view virtual returns (uint256) {
         return _allowance(holder, spender);
     }
 
     ///  @inheritdoc IERC20
-    function approve(address spender, uint256 amount) external returns (bool) {
+    function approve(
+        address spender,
+        uint256 amount
+    ) external virtual returns (bool) {
         return _approve(msg.sender, spender, amount);
     }
 
@@ -38,7 +43,7 @@ abstract contract ERC20Base is IERC20Base, ERC20BaseInternal {
     function transfer(
         address recipient,
         uint256 amount
-    ) external returns (bool) {
+    ) external virtual returns (bool) {
         return _transfer(msg.sender, recipient, amount);
     }
 
@@ -47,7 +52,7 @@ abstract contract ERC20Base is IERC20Base, ERC20BaseInternal {
         address holder,
         address recipient,
         uint256 amount
-    ) external returns (bool) {
+    ) external virtual returns (bool) {
         return _transferFrom(holder, recipient, amount);
     }
 }

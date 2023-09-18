@@ -17,7 +17,7 @@ interface IBilateralTrade is IBilateralTradeInternal, ITrade {
      * @notice Approve trade
      * @return trade status
      */
-    function approve() external returns (Status);
+    function approve() external returns (TradeStatus);
 
     /**
      * @notice Reject trade

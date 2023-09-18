@@ -5,11 +5,14 @@ pragma solidity ^0.8.20;
 
 import { IPrimaryIssuanceInternal } from "./IPrimaryIssuanceInternal.sol";
 import { PrimaryIssuanceStorage } from "./PrimaryIssuanceStorage.sol";
+import { RegisterMetadataInternal } from "../../register/metadata/RegisterMetadataInternal.sol";
 import { ReentrancyGuardInternal } from "../../security/ReentrancyGuard.sol";
+
 import { IRegister } from "../../register/IRegister.sol";
 
 abstract contract PrimaryIssuanceInternal is
     IPrimaryIssuanceInternal,
+    RegisterMetadataInternal,
     ReentrancyGuardInternal
 {
     function _account() public view returns (address) {
@@ -31,7 +34,7 @@ abstract contract PrimaryIssuanceInternal is
         PrimaryIssuanceStorage.Layout storage l = PrimaryIssuanceStorage
             .layout();
 
-        require(l.register.isBnD(msg.sender), "Sender must be a B&D");
+        require(_isBnD(msg.sender), "Sender must be a B&D");
 
         require(
             msg.sender == l.account,
@@ -39,29 +42,26 @@ abstract contract PrimaryIssuanceInternal is
         );
 
         require(
-            l.status != Status.Accepted && l.status != Status.Executed,
+            l.status != TradeStatus.Accepted &&
+                l.status != TradeStatus.Executed,
             "The primary contract should be in initiated state"
         );
 
         // get the primary issuance balance
-        l.quantity = l.register.balanceOf(l.register.primaryIssuanceAccount());
+        l.quantity = _balanceOf(l.primaryIssuanceAccount);
 
         if (l.quantity > 0) {
             // issuance account credited
             require(
-                l.register.transferFrom(
-                    l.register.primaryIssuanceAccount(),
-                    l.account,
-                    l.quantity
-                ),
+                _transferFrom(l.primaryIssuanceAccount, l.account, l.quantity),
                 "the transfer has failed"
             );
             //TODO: maybe replace that unexplicit "the transfer has failed" message
-            l.status = Status.Accepted;
+            l.status = TradeStatus.Accepted;
             emit NotifyTrade(
-                l.register.primaryIssuanceAccount(),
+                l.primaryIssuanceAccount,
                 l.account,
-                Status.Accepted,
+                TradeStatus.Accepted,
                 l.quantity
             );
         }
@@ -71,12 +71,12 @@ abstract contract PrimaryIssuanceInternal is
         PrimaryIssuanceStorage.Layout storage l = PrimaryIssuanceStorage
             .layout();
         require(msg.sender == l.account, "only the beneficiary B&D can revert");
-        l.status = Status.Rejected;
+        l.status = TradeStatus.Rejected;
         // get the primary issuance balance
-        l.quantity = l.register.balanceOf(l.register.primaryIssuanceAccount());
+        l.quantity = _balanceOf(l.primaryIssuanceAccount);
 
         emit NotifyTrade(
-            l.register.primaryIssuanceAccount(),
+            l.primaryIssuanceAccount,
             l.account,
             l.status,
             l.quantity
@@ -84,12 +84,10 @@ abstract contract PrimaryIssuanceInternal is
     }
 
     function _register() public view returns (IRegister) {
-        PrimaryIssuanceStorage.Layout storage l = PrimaryIssuanceStorage
-            .layout();
-        return l.register;
+        return IRegister(address(this));
     }
 
-    function _status() internal view returns (Status) {
+    function status_() internal view returns (TradeStatus) {
         PrimaryIssuanceStorage.Layout storage l = PrimaryIssuanceStorage
             .layout();
         return l.status;
@@ -106,8 +104,8 @@ abstract contract PrimaryIssuanceInternal is
         TradeDetail memory trade = TradeDetail({
             quantity: l.quantity,
             buyer: l.account,
-            tradeDate: l.register.getCreationDate(),
-            valueDate: l.register.getIssuanceDate(),
+            tradeDate: _getCreationDate(),
+            valueDate: _getIssuanceDate(),
             price: l.offerPrice
         });
         return trade;
@@ -116,7 +114,7 @@ abstract contract PrimaryIssuanceInternal is
     function _sellerAccount() internal view returns (address) {
         PrimaryIssuanceStorage.Layout storage l = PrimaryIssuanceStorage
             .layout();
-        return l.register.primaryIssuanceAccount();
+        return l.primaryIssuanceAccount;
     }
 
     function _buyerAccount() internal view returns (address) {

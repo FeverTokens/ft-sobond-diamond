@@ -26,13 +26,13 @@ interface ICouponInternal {
     }
 
     event CouponChanged(
-        IRegister indexed register,
+        // IRegister indexed register,
         uint256 indexed couponDate,
         CouponStatus indexed status
     );
 
     event CouponPaymentStatusChanged(
-        IRegister indexed register,
+        // IRegister indexed register,
         uint256 indexed couponDate,
         address indexed investor,
         PaymentStatus status,

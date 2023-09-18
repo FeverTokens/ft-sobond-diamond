@@ -15,8 +15,8 @@ library CouponStorage {
         uint256 cutOfTime;
         address payingAgent;
         uint256 actualTimestamp; // initialized at time of recording in the register
-        IRegister register;
-        ICouponSnapshotManagement register2;
+        // IRegister register;
+        // ICouponSnapshotManagement register2;
         ICouponInternal.CouponStatus status;
         //TODO: struct {PaymentStatus ; PaymentID}
         mapping(address => ICouponInternal.PaymentStatus) investorPayments;

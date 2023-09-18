@@ -4,7 +4,7 @@
 pragma solidity ^0.8.20;
 
 interface ITradeInternal {
-    enum Status {
+    enum TradeStatus {
         Draft,
         Pending,
         Rejected,
@@ -24,7 +24,7 @@ interface ITradeInternal {
     event NotifyTrade(
         address indexed seller,
         address indexed buyer,
-        Status indexed status,
+        TradeStatus indexed status,
         uint256 quantity
     );
 }

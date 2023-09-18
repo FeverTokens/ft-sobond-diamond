@@ -10,7 +10,7 @@ library BilateralTradeStorage {
     struct Layout {
         IRegister register;
         address sellerAccount;
-        IBilateralTradeInternal.Status status;
+        IBilateralTradeInternal.TradeStatus status;
         IBilateralTradeInternal.TradeDetail details;
     }
 

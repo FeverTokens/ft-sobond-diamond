@@ -5,9 +5,33 @@ pragma solidity ^0.8.20;
 
 import { ICoupon } from "./ICoupon.sol";
 import { CouponInternal } from "./CouponInternal.sol";
-import { ReentrancyGuard } from "../../security/ReentrancyGuard.sol";
 
-contract Coupon is ICoupon, CouponInternal, ReentrancyGuard {
+contract Coupon is ICoupon, CouponInternal {
+    /// @inheritdoc ICoupon
+    function couponDate() public view returns (uint256) {
+        return _couponDate();
+    }
+
+    /// @inheritdoc ICoupon
+    function nbDays() public view returns (uint256) {
+        return _nbDays();
+    }
+
+    /// @inheritdoc ICoupon
+    function recordDate() public view returns (uint256) {
+        return _recordDate();
+    }
+
+    /// @inheritdoc ICoupon
+    function cutOfTime() public view returns (uint256) {
+        return _cutOfTime();
+    }
+
+    /// @inheritdoc ICoupon
+    function payingAgent() public view returns (address) {
+        return _payingAgent();
+    }
+
     /// @inheritdoc ICoupon
     function getInvestorPayments(
         address _investor
@@ -28,13 +52,13 @@ contract Coupon is ICoupon, CouponInternal, ReentrancyGuard {
     }
 
     /// @inheritdoc ICoupon
-    function setNbDays(uint256 _nbDays) public {
-        _setNbDays(_nbDays);
+    function setNbDays(uint256 nbDays_) public {
+        _setNbDays(nbDays_);
     }
 
     /// @inheritdoc ICoupon
-    function setCutOffTime(uint256 _recordDate, uint256 _cutOfTime) public {
-        _setCutOffTime(_recordDate, _cutOfTime);
+    function setCutOffTime(uint256 recordDate_, uint256 cutOfTime_) public {
+        _setCutOffTime(recordDate_, cutOfTime_);
     }
 
     /// @inheritdoc ICoupon

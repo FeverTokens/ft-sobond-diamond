@@ -5,19 +5,24 @@ pragma solidity ^0.8.20;
 
 import { IRedemptionInternal } from "./IRedemptionInternal.sol";
 import { RedemptionStorage } from "./RedemptionStorage.sol";
-import { CouponInternal } from "./CouponInternal.sol";
+import { Coupon } from "./Coupon.sol";
 import { CouponStorage } from "./CouponStorage.sol";
 
-abstract contract RedemptionInternal is IRedemptionInternal, CouponInternal {
+abstract contract RedemptionInternal is IRedemptionInternal, Coupon {
+    function _investorRedemptionPayments(
+        address _investor
+    ) internal view returns (PaymentStatus) {
+        RedemptionStorage.Layout storage redemptionLayout = RedemptionStorage
+            .layout();
+        return redemptionLayout.investorRedemptionPayments[_investor];
+    }
+
     function _getMaturityAmountForInvestor(
         address _investor
     ) internal view returns (uint256 paymentAmount) {
         CouponStorage.Layout storage couponLayout = CouponStorage.layout();
-        uint256 unitValue = couponLayout.register.getBondUnitValue();
-        uint256 balance = couponLayout.register2.balanceOfCoupon(
-            _investor,
-            couponLayout.couponDate
-        );
+        uint256 unitValue = _getBondUnitValue();
+        uint256 balance = _balanceOfCoupon(_investor, couponLayout.couponDate);
         uint256 maturityAmount = unitValue * balance;
         // Number of decimal is 0
         return (maturityAmount);
@@ -28,9 +33,8 @@ abstract contract RedemptionInternal is IRedemptionInternal, CouponInternal {
         view
         returns (uint256 paymentAmount)
     {
-        CouponStorage.Layout storage couponLayout = CouponStorage.layout();
-        uint256 unitValue = couponLayout.register.getBondUnitValue();
-        uint256 balance = couponLayout.register.totalSupply();
+        uint256 unitValue = _getBondUnitValue();
+        uint256 balance = _totalSupply();
         uint256 maturityAmount = unitValue * balance;
         // Number of decimal is 0
         return (maturityAmount);
@@ -48,10 +52,7 @@ abstract contract RedemptionInternal is IRedemptionInternal, CouponInternal {
         RedemptionStorage.Layout storage redemptionLayout = RedemptionStorage
             .layout();
         CouponStorage.Layout storage couponLayout = CouponStorage.layout();
-        require(
-            couponLayout.register.investorsAllowed(_investor),
-            "This investor is not allowed"
-        );
+        require(_investorsAllowed(_investor), "This investor is not allowed");
 
         // The status control is important here because the actualTimestamp is zero before the status gets Ready
         require(
@@ -62,7 +63,7 @@ abstract contract RedemptionInternal is IRedemptionInternal, CouponInternal {
         PaymentStatus initialStatus = redemptionLayout
             .investorRedemptionPayments[_investor];
 
-        if (couponLayout.register.isCAK(msg.sender)) {
+        if (_isCAK(msg.sender)) {
             if (
                 redemptionLayout.investorRedemptionPayments[_investor] ==
                 PaymentStatus.ToBePaid
@@ -79,15 +80,11 @@ abstract contract RedemptionInternal is IRedemptionInternal, CouponInternal {
 
                 //force transfer de l'investisseur vers le primary issuance account de la totalité
                 //de la balance lorsque l'on passe de tobepaid a paid et si balance > 0
-                uint256 investorBalance = couponLayout.register.balanceOf(
-                    _investor
-                );
+                uint256 investorBalance = _balanceOf(_investor);
 
                 if (investorBalance > 0) {
                     require(
-                        couponLayout
-                            .register
-                            .returnBalanceToPrimaryIssuanceAccount(_investor),
+                        _returnBalanceToPrimaryIssuanceAccount(_investor),
                         "return balance expected but failed"
                     );
                 }
@@ -103,10 +100,9 @@ abstract contract RedemptionInternal is IRedemptionInternal, CouponInternal {
                     "The status of this investor's payment should be Paid or ToBePaid"
                 );
             }
-        } else if (couponLayout.register.isCustodian(msg.sender)) {
+        } else if (_isCustodian(msg.sender)) {
             require(
-                couponLayout.register.investorCustodian(_investor) ==
-                    msg.sender,
+                _investorCustodian(_investor) == msg.sender,
                 "You are not custodian of this investor"
             );
             if (
@@ -131,7 +127,7 @@ abstract contract RedemptionInternal is IRedemptionInternal, CouponInternal {
         }
 
         emit RedemptionPaymentStatusChanged(
-            couponLayout.register,
+            // couponLayout.register,
             couponLayout.couponDate,
             _investor,
             redemptionLayout.investorRedemptionPayments[_investor],

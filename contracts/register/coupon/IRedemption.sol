@@ -11,6 +11,14 @@ interface IRedemption is IRedemptionInternal, ICoupon {
      * @param _investor The investor address
      * @return paymentAmount The maturity amount
      */
+    function investorRedemptionPayments(
+        address _investor
+    ) external view returns (PaymentStatus);
+
+    /** @notice Get the maturity amount for an investor
+     * @param _investor The investor address
+     * @return paymentAmount The maturity amount
+     */
     function getMaturityAmountForInvestor(
         address _investor
     ) external view returns (uint256 paymentAmount);

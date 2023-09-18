@@ -15,7 +15,7 @@ contract BilateralTrade is IBilateralTrade, BilateralTradeInternal {
     }
 
     /// @inheritdoc ITrade
-    function status() external view returns (Status) {
+    function status() external view returns (TradeStatus) {
         return _status();
     }
 
@@ -45,7 +45,7 @@ contract BilateralTrade is IBilateralTrade, BilateralTradeInternal {
     }
 
     /// @inheritdoc IBilateralTrade
-    function approve() external returns (Status) {
+    function approve() external returns (TradeStatus) {
         return _approve();
     }
 

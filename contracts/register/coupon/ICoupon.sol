@@ -8,6 +8,16 @@ import { ICouponInternal } from "./ICouponInternal.sol";
 interface ICoupon is ICouponInternal {
     // TODO add documentation
 
+    function couponDate() external view returns (uint256);
+
+    function nbDays() external view returns (uint256);
+
+    function recordDate() external view returns (uint256);
+
+    function cutOfTime() external view returns (uint256);
+
+    function payingAgent() external view returns (address);
+
     function getInvestorPayments(
         address _investor
     ) external view returns (PaymentStatus);

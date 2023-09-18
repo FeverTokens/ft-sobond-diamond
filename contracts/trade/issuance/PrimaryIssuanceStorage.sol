@@ -12,7 +12,8 @@ library PrimaryIssuanceStorage {
         address account;
         uint256 quantity;
         uint256 offerPrice;
-        IPrimaryIssuanceInternal.Status status; // ? maybe it will clash with status in ReentrancyGuard?
+        address primaryIssuanceAccount; /// TODO set to address(this) during initialization
+        IPrimaryIssuanceInternal.TradeStatus status; // ? maybe it will clash with status in ReentrancyGuard?
     }
 
     bytes32 internal constant STORAGE_SLOT =

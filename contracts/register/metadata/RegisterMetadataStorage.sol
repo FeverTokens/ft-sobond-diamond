@@ -3,15 +3,15 @@
 
 pragma solidity ^0.8.20;
 
-import { IRegisterInternal } from "./IRegisterInternal.sol";
+import { IRegisterMetadataInternal } from "./IRegisterMetadataInternal.sol";
 
-library RegisterStorage {
+library RegisterMetadataStorage {
     struct Layout {
-        IRegisterInternal.Status status;
-        IRegisterInternal.BondData data;
-        mapping(address => IRegisterInternal.InvestorInfo) investorInfos; /// @dev mapping of an address to the custodian address or none if not listed
+        IRegisterMetadataInternal.Status status;
+        IRegisterMetadataInternal.BondData data;
+        address primaryIssuanceAccount; /// TODO set to address(this) during initialization
+        mapping(address => IRegisterMetadataInternal.InvestorInfo) investorInfos; /// @dev mapping of an address to the custodian address or none if not listed
         address[] investorsList;
-        address primaryIssuanceAccount; /// @dev set to this address
     }
 
     bytes32 internal constant STORAGE_SLOT =

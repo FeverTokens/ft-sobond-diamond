@@ -17,7 +17,7 @@ interface ITrade is ITradeInternal {
      * @notice Return trade status
      * @return trade status
      */
-    function status() external view returns (Status);
+    function status() external view returns (TradeStatus);
 
     /**
      * @notice Return payment ID

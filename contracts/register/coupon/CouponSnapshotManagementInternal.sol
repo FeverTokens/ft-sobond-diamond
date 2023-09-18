@@ -4,51 +4,120 @@
 pragma solidity ^0.8.20;
 
 import { ICouponSnapshotManagementInternal } from "./ICouponSnapshotManagementInternal.sol";
+import { IRegisterMetadataInternal } from "../metadata/IRegisterMetadataInternal.sol";
 import { CouponSnapshotManagementStorage } from "./CouponSnapshotManagementStorage.sol";
-
+import { RegisterMetadataStorage } from "../metadata/RegisterMetadataStorage.sol";
+import { RegisterRoleManagementInternal } from "../role/RegisterRoleManagementInternal.sol";
+import { SmartContractAccessManagementInternal } from "../access/SmartContractAccessManagementInternal.sol";
 import { ERC20Snapshot } from "../../token/ERC20/extensions/ERC20Snapshot.sol";
 import { ERC20Metadata } from "../../token/ERC20/extensions/ERC20Metadata.sol";
 
-import { RegisterStorage } from "../RegisterStorage.sol";
-
 abstract contract CouponSnapshotManagementInternal is
     ICouponSnapshotManagementInternal,
+    IRegisterMetadataInternal,
+    RegisterRoleManagementInternal,
+    SmartContractAccessManagementInternal,
     ERC20Snapshot,
     ERC20Metadata
 {
     /**
-     * @dev Returns the name of the token.
+     * @dev Returns the name of the token/Bond.
      */
     function _name() internal view virtual override returns (string memory) {
-        RegisterStorage.Layout storage l = RegisterStorage.layout();
+        RegisterMetadataStorage.Layout storage l = RegisterMetadataStorage
+            .layout();
         return l.data.name;
     }
 
     /**
-     * @dev Returns the symbol of the token, usually a shorter version of the
-     * name.
+     * @dev Returns the ISIN of the Bond, usually a shorter version of the name.
      */
     function _symbol() internal view virtual override returns (string memory) {
-        RegisterStorage.Layout storage l = RegisterStorage.layout();
+        RegisterMetadataStorage.Layout storage l = RegisterMetadataStorage
+            .layout();
         return l.data.isin;
     }
 
-    function _currentSnapshotDatetime() internal view returns (uint256) {
-        CouponSnapshotManagementStorage.Layout
-            storage l = CouponSnapshotManagementStorage.layout();
-        return l._currentSnapshotTimestamp;
+    /**
+     * @dev This contract represents an issued Bond composed of an integer number of parts,
+     * hence no fractional representation is allowed: decimal is zero.
+     */
+    function _decimals() internal view virtual override returns (uint8) {
+        return 0;
     }
 
-    function _nextSnapshotDatetime() internal view returns (uint256) {
-        CouponSnapshotManagementStorage.Layout
-            storage l = CouponSnapshotManagementStorage.layout();
-        return l._nextSnapshotTimestamp;
-    }
+    /**
+     * @dev This function can be called by a CAK or an authorized smart contract (see mapping _contractsAllowed)
+     * if called by the CAK, then the transfer is done
+     * if called by an authorized smart contract, the transfer is done
+     */
+    function _transferFrom(
+        address from_,
+        address to_,
+        uint256 amount_
+    ) internal virtual override returns (bool) {
+        {
+            RegisterMetadataStorage.Layout storage l = RegisterMetadataStorage
+                .layout();
+            //FIXME: redemption:  if currentTS==0 deny all  (returns false) transfer except if TO= PrimaryIssuanceAccount
+            /** @dev if sender is CAK then any transfer is accepted */
+            if (_hasRole(CAK_ROLE, msg.sender)) {
+                _transfer(from_, to_, amount_);
+                return true;
+            } else {
+                // Not called directly from a CAK user
+                /** @dev enforce caller contract is whitelisted */
+                require(
+                    _isContractAllowed(msg.sender),
+                    "This contract is not whitelisted"
+                );
 
-    function _currentCouponDate() internal view returns (uint256) {
-        CouponSnapshotManagementStorage.Layout
-            storage l = CouponSnapshotManagementStorage.layout();
-        return l._currentCouponDate;
+                require(
+                    l.status != Status.Frozen,
+                    "No transfer can be done when the register is Frozen"
+                );
+
+                // Additional checks depending on the situation
+
+                // If we are called by the BnD / PrimaryIssuance smart contract
+                // Note: B&D wallet is only usable for the initial purchase and then the primary sell
+                // we can change the status of the register, BnD wallet will not be whitelisted
+                if (
+                    l.status == Status.Ready &&
+                    _hasRole(BND_ROLE, to_) &&
+                    from_ == l.primaryIssuanceAccount
+                ) {
+                    l.status = Status.Issued;
+                    // Change: We do not enable the B&D as investor to prevent the B&D to receive securities later
+                    // but we still need the BnD to be declared as an investor
+                    _initInvestor(to_, address(0), false);
+
+                    emit RegisterStatusChanged(
+                        msg.sender,
+                        l.data.name,
+                        l.data.isin,
+                        l.status
+                    );
+                } else {
+                    // standard case
+
+                    //make sure the recipient is an allowed investor
+                    require(
+                        _investorsAllowed(to_) == true,
+                        "The receiver is not allowed"
+                    );
+
+                    require(
+                        _investorsAllowed(from_) == true || // the seller must be a valid investor at the time of transfer
+                            _hasRole(BND_ROLE, from_), // or the seller is the B&D for the primary distribution
+                        "The sender is not allowed"
+                    );
+                }
+
+                _transfer(from_, to_, amount_);
+                return true;
+            }
+        }
     }
 
     /**
@@ -82,6 +151,24 @@ abstract contract CouponSnapshotManagementInternal is
         } else {
             return _totalSupply();
         }
+    }
+
+    function _currentCouponDate() internal view returns (uint256) {
+        CouponSnapshotManagementStorage.Layout
+            storage l = CouponSnapshotManagementStorage.layout();
+        return l._currentCouponDate;
+    }
+
+    function _currentSnapshotDatetime() internal view returns (uint256) {
+        CouponSnapshotManagementStorage.Layout
+            storage l = CouponSnapshotManagementStorage.layout();
+        return l._currentSnapshotTimestamp;
+    }
+
+    function _nextSnapshotDatetime() internal view returns (uint256) {
+        CouponSnapshotManagementStorage.Layout
+            storage l = CouponSnapshotManagementStorage.layout();
+        return l._nextSnapshotTimestamp;
     }
 
     function _forceNextTransfer() internal returns (bool) {
@@ -266,5 +353,55 @@ abstract contract CouponSnapshotManagementInternal is
         timePart = time_ % (3600 * 24); // make sure the time only has time part
         d = d + timePart;
         return d;
+    }
+
+    /**
+     * @dev called by _enebaleInvestor and the primary issuance to defined the BnD
+     */
+    function _initInvestor(
+        address investor_,
+        address custodian_,
+        bool allowed
+    ) internal {
+        RegisterMetadataStorage.Layout storage l = RegisterMetadataStorage
+            .layout();
+        uint256 index = l.investorsList.length;
+        l.investorsList.push(investor_);
+        l.investorInfos[investor_].index = index;
+        l.investorInfos[investor_].investor = investor_;
+        l.investorInfos[investor_].custodian = custodian_;
+        l.investorInfos[investor_].allowed = allowed;
+    }
+
+    /**
+     * @dev called by enableInvestorToWhitelist
+     */
+    function _enableInvestor(address investor_, address custodian_) internal {
+        RegisterMetadataStorage.Layout storage l = RegisterMetadataStorage
+            .layout();
+        if (_investorsAllowed(investor_)) {
+            //since _enableInvestor is called upon each transferFrom, do nothing if already enabled
+            return;
+        }
+
+        bool isNew = l.investorInfos[investor_].custodian == address(0);
+        if (isNew) {
+            // first whitelisting
+            _initInvestor(investor_, custodian_, true);
+        } else {
+            //only investor's custodian may re-enable the investor state
+            require(
+                l.investorInfos[investor_].custodian == custodian_,
+                "only the custodian can disallow the investor"
+            );
+            l.investorInfos[investor_].allowed = true;
+        }
+        emit EnableInvestor(investor_);
+    }
+
+    function _investorsAllowed(address investor) internal view returns (bool) {
+        RegisterMetadataStorage.Layout storage l = RegisterMetadataStorage
+            .layout();
+        return l.investorInfos[investor].allowed;
     }
 }

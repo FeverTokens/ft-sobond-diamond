@@ -4,9 +4,22 @@
 pragma solidity ^0.8.20;
 
 import { IPrimaryIssuance, ITrade } from "./IPrimaryIssuance.sol";
-import { PrimaryIssuanceInternal, IRegister } from "./PrimaryIssuanceInternal.sol";
+import { PrimaryIssuanceInternal } from "./PrimaryIssuanceInternal.sol";
+
+import { IRegister } from "../../register/IRegister.sol";
 
 contract PrimaryIssuance is IPrimaryIssuance, PrimaryIssuanceInternal {
+    /// @inheritdoc IPrimaryIssuance
+    function primaryIssuanceAccount()
+        public
+        view
+        virtual
+        override
+        returns (address)
+    {
+        return _primaryIssuanceAccount();
+    }
+
     /// @inheritdoc IPrimaryIssuance
     function account() public view returns (address) {
         return _account();
@@ -27,14 +40,14 @@ contract PrimaryIssuance is IPrimaryIssuance, PrimaryIssuanceInternal {
         _reject();
     }
 
-    /// @inheritdoc ITrade
+    // /// @inheritdoc ITrade
     function register() public view returns (IRegister) {
         return _register();
     }
 
     /// @inheritdoc ITrade
-    function status() public view returns (Status) {
-        return _status();
+    function status() public view returns (TradeStatus) {
+        return status_();
     }
 
     /// @inheritdoc ITrade

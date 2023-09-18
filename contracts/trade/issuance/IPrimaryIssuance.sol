@@ -8,8 +8,14 @@ import { IPrimaryIssuanceInternal } from "./IPrimaryIssuanceInternal.sol";
 
 interface IPrimaryIssuance is IPrimaryIssuanceInternal, ITrade {
     /**
-     * @notice Return the account of the primary issuance
-     * @return account of the primary issuance
+     * @notice Return the account which receives the minted tokens
+     * @return address of the primary issuance account (Registry)
+     */
+    function primaryIssuanceAccount() external view returns (address);
+
+    /**
+     * @notice Return the account of the BnD
+     * @return address of the BnD
      */
     function account() external view returns (address);
 

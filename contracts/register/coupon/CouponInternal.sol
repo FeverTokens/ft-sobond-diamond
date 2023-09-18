@@ -5,11 +5,14 @@ pragma solidity ^0.8.20;
 
 import { ICouponInternal } from "./ICouponInternal.sol";
 import { CouponStorage } from "./CouponStorage.sol";
-import { ReentrancyGuardInternal } from "../../security/ReentrancyGuardInternal.sol";
-import { IRegister } from "../IRegister.sol";
-import { ICouponSnapshotManagement } from "./ICouponSnapshotManagement.sol";
+import { RegisterMetadataInternal } from "../metadata/RegisterMetadataInternal.sol";
+import { ReentrancyGuard } from "../../security/ReentrancyGuard.sol";
 
-abstract contract CouponInternal is ICouponInternal, ReentrancyGuardInternal {
+abstract contract CouponInternal is
+    ICouponInternal,
+    RegisterMetadataInternal,
+    ReentrancyGuard
+{
     /**
      * @dev Throws if called by any account other than the PAY_ROLE.
      */
@@ -17,43 +20,71 @@ abstract contract CouponInternal is ICouponInternal, ReentrancyGuardInternal {
         // TODO: Manage the pay role
         CouponStorage.Layout storage l = CouponStorage.layout();
         require(
-            l.register.isPay(msg.sender),
+            _isPay(msg.sender),
             "Sender must be a Paying calculation agent"
         );
         _;
     }
     modifier onlyCST_ROLE() {
         CouponStorage.Layout storage l = CouponStorage.layout();
-        require(l.register.isCustodian(msg.sender), "Sender must be Custodian");
+        require(_isCustodian(msg.sender), "Sender must be Custodian");
         _;
     }
 
     function _initialize(
-        address _registerContract,
-        uint256 _couponDate,
-        uint256 _nbDays,
-        uint256 _recordDate,
-        uint256 _cutOfTime
+        uint256 couponDate,
+        uint256 nbDays,
+        uint256 recordDate,
+        uint256 cutOfTime
     ) internal {
         CouponStorage.Layout storage l = CouponStorage.layout();
-        l.register = IRegister(_registerContract);
-        l.register2 = ICouponSnapshotManagement(_registerContract);
+        // l.register = IRegister(registerContract);
+        // l.register2 = ICouponSnapshotManagement(registerContract);
         // TODO : Activate  the pay role
         require(
-            l.register.isPay(msg.sender),
+            _isPay(msg.sender),
             "Sender must be a Paying calculation agent"
         );
         require(
-            l.register.checkIfCouponDateExists(_couponDate),
+            _checkIfCouponDateExists(couponDate),
             "this couponDate does not exists"
         );
-        l.couponDate = _couponDate;
-        l.nbDays = _nbDays;
-        l.recordDate = _recordDate - (_recordDate % (3600 * 24)); // remove the time if any
-        l.cutOfTime = _cutOfTime % (3600 * 24); // remove the date part if any
+        l.couponDate = couponDate;
+        l.nbDays = nbDays;
+        l.recordDate = recordDate - (recordDate % (3600 * 24)); // remove the time if any
+        l.cutOfTime = cutOfTime % (3600 * 24); // remove the date part if any
         l.payingAgent = msg.sender;
         l.status = CouponStatus.Draft;
-        emit CouponChanged(l.register, l.couponDate, l.status);
+        emit CouponChanged(
+            // l.register,
+            l.couponDate,
+            l.status
+        );
+    }
+
+    function _couponDate() internal view returns (uint256) {
+        CouponStorage.Layout storage l = CouponStorage.layout();
+        return l.couponDate;
+    }
+
+    function _nbDays() internal view returns (uint256) {
+        CouponStorage.Layout storage l = CouponStorage.layout();
+        return l.nbDays;
+    }
+
+    function _recordDate() internal view returns (uint256) {
+        CouponStorage.Layout storage l = CouponStorage.layout();
+        return l.recordDate;
+    }
+
+    function _cutOfTime() internal view returns (uint256) {
+        CouponStorage.Layout storage l = CouponStorage.layout();
+        return l.cutOfTime;
+    }
+
+    function _payingAgent() internal view returns (address) {
+        CouponStorage.Layout storage l = CouponStorage.layout();
+        return l.payingAgent;
     }
 
     function _getInvestorPayments(
@@ -81,46 +112,51 @@ abstract contract CouponInternal is ICouponInternal, ReentrancyGuardInternal {
             "The coupon date can be modified only if the contract status is Draft"
         );
         require(
-            l.register.checkIfCouponDateExists(l.couponDate),
+            _checkIfCouponDateExists(l.couponDate),
             "this couponDate does not exists"
         );
 
-        l.register.setCurrentCouponDate(
-            l.couponDate,
-            l.recordDate + l.cutOfTime
-        );
+        _setCurrentCouponDate(l.couponDate, l.recordDate + l.cutOfTime);
         // get the timestamp when the coupon period is passed
-        l.actualTimestamp = l.register2.currentSnapshotDatetime();
+        l.actualTimestamp = _currentSnapshotDatetime();
         l.status = CouponStatus.Ready;
-        emit CouponChanged(l.register, l.couponDate, l.status);
+        emit CouponChanged(
+            // l.register,
+            l.couponDate,
+            l.status
+        );
     }
 
-    function _setNbDays(uint256 _nbDays) internal onlyPAY_ROLE {
+    function _setNbDays(uint256 nbDays) internal onlyPAY_ROLE {
         CouponStorage.Layout storage l = CouponStorage.layout();
         require(
             l.status == CouponStatus.Draft,
             "The coupon date can be modified only if the contract status is Draft"
         );
-        l.nbDays = _nbDays;
+        l.nbDays = nbDays;
     }
 
     function _setCutOffTime(
-        uint256 _recordDate,
-        uint256 _cutOfTime
+        uint256 recordDate,
+        uint256 cutOfTime
     ) internal onlyPAY_ROLE {
         CouponStorage.Layout storage l = CouponStorage.layout();
         require(
             l.status == CouponStatus.Draft,
             "The coupon date can be modified only if the contract status is Draft"
         );
-        l.recordDate = _recordDate - (_recordDate % (24 * 3600));
-        l.cutOfTime = _cutOfTime % (24 * 3600);
+        l.recordDate = recordDate - (recordDate % (24 * 3600));
+        l.cutOfTime = cutOfTime % (24 * 3600);
     }
 
     function _rejectCoupon() internal onlyPAY_ROLE {
         CouponStorage.Layout storage l = CouponStorage.layout();
         l.status = CouponStatus.Cancelled;
-        emit CouponChanged(l.register, l.couponDate, l.status);
+        emit CouponChanged(
+            // l.register,
+            l.couponDate,
+            l.status
+        );
     }
 
     function _getPaymentAmountForInvestor(
@@ -130,9 +166,9 @@ abstract contract CouponInternal is ICouponInternal, ReentrancyGuardInternal {
         // Calculate coupon amount with Formula of Coupon Amount = unitValue * _totalSupply * couponRate * nbDays / 360
         // Step 2 on process - https://user-images.githubusercontent.com/26713092/172685832-b507fd58-fd50-466f-b91e-93e4d9f80c50.png
 
-        uint256 unitValue = l.register.getBondUnitValue();
-        uint256 couponRate = l.register.getBondCouponRate();
-        uint256 balance = l.register2.balanceOfCoupon(_investor, l.couponDate);
+        uint256 unitValue = _getBondUnitValue();
+        uint256 couponRate = _getBondCouponRate();
+        uint256 balance = _balanceOfCoupon(_investor, l.couponDate);
         uint256 couponAmount = (unitValue * balance * couponRate * l.nbDays) /
             360;
         /** @dev
@@ -152,9 +188,9 @@ abstract contract CouponInternal is ICouponInternal, ReentrancyGuardInternal {
         // Calculate coupon amount with Formula of Coupon Amount = unitValue * _totalSupply * couponRate * nbDays / 360
         // Step 2 on process - https://user-images.githubusercontent.com/26713092/172685832-b507fd58-fd50-466f-b91e-93e4d9f80c50.png
 
-        uint256 unitValue = l.register.getBondUnitValue();
-        uint256 couponRate = l.register.getBondCouponRate();
-        uint256 balance = l.register.totalSupply();
+        uint256 unitValue = _getBondUnitValue();
+        uint256 couponRate = _getBondCouponRate();
+        uint256 balance = _totalSupply();
         uint256 couponAmount = (unitValue * balance * couponRate * l.nbDays) /
             360;
         /** @dev
@@ -167,10 +203,7 @@ abstract contract CouponInternal is ICouponInternal, ReentrancyGuardInternal {
 
     function _toggleCouponPayment(address _investor) internal {
         CouponStorage.Layout storage l = CouponStorage.layout();
-        require(
-            l.register.investorsAllowed(_investor),
-            "This investor is not allowed"
-        );
+        require(_investorsAllowed(_investor), "This investor is not allowed");
 
         // The status control is important here because the actualTimestamp is zero before the status gets Ready
         require(
@@ -179,7 +212,7 @@ abstract contract CouponInternal is ICouponInternal, ReentrancyGuardInternal {
         );
         PaymentStatus initialStatus = l.investorPayments[_investor];
 
-        if (l.register.isCAK(msg.sender)) {
+        if (_isCAK(msg.sender)) {
             //CAK can make tobepaid to paid for all investors
             if (l.investorPayments[_investor] == PaymentStatus.ToBePaid) {
                 require(
@@ -192,14 +225,13 @@ abstract contract CouponInternal is ICouponInternal, ReentrancyGuardInternal {
             else if ((l.investorPayments[_investor] == PaymentStatus.Paid)) {
                 l.investorPayments[_investor] = PaymentStatus.ToBePaid;
             } else {
-                require(
-                    false,
+                revert(
                     "The status of this investor's payment should be Paid or ToBePaid"
                 );
             }
-        } else if (l.register.isCustodian(msg.sender)) {
+        } else if (_isCustodian(msg.sender)) {
             require(
-                l.register.investorCustodian(_investor) == msg.sender,
+                _investorCustodian(_investor) == msg.sender,
                 "You are not custodian of this investor"
             );
             //cust peut faire passer de paid à received pour ses investors
@@ -212,16 +244,12 @@ abstract contract CouponInternal is ICouponInternal, ReentrancyGuardInternal {
             ) {
                 l.investorPayments[_investor] = PaymentStatus.Paid;
             } else {
-                require(false, "Invalid Coupon payment status");
+                revert("Invalid Coupon payment status");
             }
-        } else
-            require(
-                false,
-                "sender must be Central Account Keeper or Custodian"
-            );
+        } else revert("sender must be Central Account Keeper or Custodian");
 
         emit CouponPaymentStatusChanged(
-            l.register,
+            // l.register,
             l.couponDate,
             _investor,
             l.investorPayments[_investor],

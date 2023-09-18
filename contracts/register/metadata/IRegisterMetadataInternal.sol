@@ -11,7 +11,6 @@ interface IRegisterMetadataInternal {
         Repaid,
         Frozen
     }
-
     struct BondData {
         string name;
         string isin;
@@ -25,4 +24,34 @@ interface IRegisterMetadataInternal {
         uint256[] couponDates; /// @dev An array of dates, as anniversary dates of the issuance until maturity (excluded). For instance, if the bond is issued on the 10/10/2022 with a 3 years maturity, we shall expect 2 coupon dates: 10/10/2023, 10/10/2024
         uint256 cutOffTime; /// @dev The time part of the coupon snapshot (must be lower than 24*300 sec)
     }
+
+    struct InvestorInfo {
+        address investor; //TODO: de-normalisation maybe not needed
+        bool allowed; // true if investor whitelisted for transfer
+        uint256 index; // zero-based index on investor list
+        address custodian;
+    }
+
+    event WalletAddedToWhitelist(address indexed toBeAdded);
+
+    event WalletDeletedFromWhitelist(address indexed toBeDeleted);
+
+    event EnableInvestor(address investor);
+
+    event DisableInvestor(address investor);
+
+    event NewBondDrafted(address indexed creator, string name, string isin); //FIXME: remove this and replace by RegisterStatusChanged
+
+    event RegisterStatusChanged(
+        address indexed emiter,
+        string name,
+        string isin,
+        Status status
+    );
+
+    event PublicMessage(
+        address indexed sender,
+        address indexed target,
+        string message
+    );
 }

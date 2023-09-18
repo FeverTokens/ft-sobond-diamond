@@ -8,7 +8,7 @@ import { IRegister } from "../IRegister.sol";
 
 interface IRedemptionInternal is ICouponInternal {
     event RedemptionPaymentStatusChanged(
-        IRegister indexed register,
+        // IRegister indexed register,
         uint256 indexed couponDate,
         address indexed investor,
         PaymentStatus status,
