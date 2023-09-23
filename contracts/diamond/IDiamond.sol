@@ -16,6 +16,4 @@ interface IDiamond is
     IDiamondCut,
     IOwnable,
     IERC165
-{
-    receive() external payable;
-}
+{}

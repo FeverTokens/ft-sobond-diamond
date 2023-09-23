@@ -72,5 +72,5 @@ abstract contract DiamondFallback is
         DiamondBaseStorage.layout().fallbackAddress = fallbackAddress;
     }
 
-    // receive() external payable {}
+    receive() external payable virtual {}
 }

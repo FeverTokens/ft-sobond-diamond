@@ -87,7 +87,7 @@ abstract contract Diamond is
         _setOwner(msg.sender);
     }
 
-    receive() external payable {}
+    receive() external payable override {}
 
     function _transferOwnership(
         address account
