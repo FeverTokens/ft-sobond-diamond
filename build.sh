@@ -1,7 +1,7 @@
 solc --version
 # Set --metadata-hash to remove metadata without 34 bytes IPFS hash there is still
 # the solc version in the metadata.
-solc -o contracts --optimize --combined-json abi,bin,bin-runtime --metadata-hash none --overwrite --base-path . --include-path ./node_modules  src/*.sol
+solc -o contracts --optimize --combined-json abi,bin,bin-runtime --metadata-hash none --overwrite --base-path . --include-path ./node_modules src/*/*.sol src/*/*/*.sol
 
 if [ $? -eq 0 ]
 then
