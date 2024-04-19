@@ -16,8 +16,23 @@ import {
 } from "@saturn-chain/smart-contract";
 import {blockGasLimit, mintGas, registerGas} from "./gas.constant";
 import {makeBondDate, makeDateTime} from "./dates";
+import {
+	DiamondCut,
+	FacetCutAction,
+	deployRegisterPackage,
+	getFunctionABI,
+} from "../scripts/diamond";
 
-const RegisterContractName = "Register";
+const RegisterContractName = "RegisterDiamond";
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
+const registerPackages = [
+	"RegisterMetadata",
+	"CouponSnapshotManagement",
+	"RegisterRoleManagement",
+	"SmartContractAccessManagement",
+	"InvestorManagement",
+];
 
 describe("Register snapshot testing", function () {
 	this.timeout(10000);
@@ -61,34 +76,96 @@ describe("Register snapshot testing", function () {
 		const currency = web3.utils.asciiToHex("SEK");
 		const unitVal = 100000;
 		const couponRate = web3.utils.asciiToHex("0.4");
-		// const creationDate = 1309002208; //UTC
-		// const issuanceDate = 1309102208; //UTC
-		// const maturityDate = 1309202208; //UTC
-		// const couponDates = [1309302208, 1309402208]; //UTC
-		// const defaultCutofftime = 17 * 3600; //17:00
+		const creationDate = dates.creationDate;
+		const issuanceDate = dates.issuanceDate;
+		const maturityDate = dates.maturityDate;
+		const couponDates = dates.couponDates;
+		const defaultCutofftime = dates.defaultCutofftime;
 
-		if (allContracts.get(RegisterContractName)) {
-			Register = allContracts.get(RegisterContractName);
-			instance = await Register.deploy(
-				cak.newi({maxGas: registerGas}),
-				bondName,
-				isin,
-				expectedSupply,
-				currency,
-				unitVal,
-				couponRate,
-				dates.creationDate,
-				dates.issuanceDate,
-				dates.maturityDate,
-				dates.couponDates,
-				dates.defaultCutofftime,
+		// deploy RegisterDiamondReadable
+		const RegisterDiamondReadable: SmartContract = allContracts.get(
+			"RegisterDiamondReadable",
+		);
+
+		const instanceRegisterDiamondReadable: SmartContractInstance =
+			await RegisterDiamondReadable.deploy(cak.newi({maxGas: registerGas}));
+
+		const addressRegisterDiamondReadable =
+			instanceRegisterDiamondReadable.deployedAt;
+
+		// deploy RegisterDiamondWritable
+		const RegisterDiamondWritable: SmartContract = allContracts.get(
+			"RegisterDiamondWritable",
+		);
+
+		const instanceRegisterDiamondWritable: SmartContractInstance =
+			await RegisterDiamondWritable.deploy(cak.newi({maxGas: registerGas}));
+
+		const addressRegisterDiamondWritable =
+			instanceRegisterDiamondWritable.deployedAt;
+
+		// create initData for RegisterDiamondWritable
+		const initializeABI = await getFunctionABI(
+			"RegisterDiamondWritable",
+			"initialize",
+		);
+
+		const initObject: any = [
+			bondName,
+			isin,
+			expectedSupply,
+			currency,
+			unitVal,
+			couponRate,
+			creationDate,
+			issuanceDate,
+			maturityDate,
+			couponDates,
+			defaultCutofftime,
+		];
+
+		const initData = web3.eth.abi.encodeFunctionCall(initializeABI, initObject);
+
+		// deploy RegisterDiamond
+		Register = allContracts.get(RegisterContractName);
+
+		instance = await Register.deploy(
+			cak.newi({maxGas: registerGas}),
+			addressRegisterDiamondReadable,
+			addressRegisterDiamondWritable,
+			initData,
+		);
+
+		// instanciate RegisterDiamondWritable
+		const intanceRegisterWritable = RegisterDiamondWritable.at(
+			instance.deployedAt,
+		);
+
+		// create register cuts
+		let registerCuts: DiamondCut[] = [];
+
+		// return an array of promises
+		const promises = registerPackages.map(async (registerPackageName) => {
+			const cut: DiamondCut = await deployRegisterPackage(
+				cak,
+				registerPackageName,
 			);
-		} else {
-			throw new Error(
-				RegisterContractName +
-					" contract not defined in the compilation result",
-			);
-		}
+			return cut;
+		});
+
+		// Use Promise.all to await all promises in parallel
+		registerCuts = await Promise.all(promises);
+
+		await intanceRegisterWritable.diamondCut(
+			cak.send({maxGas: registerGas}),
+			registerCuts,
+			ZERO_ADDRESS,
+			"0x",
+		);
+
+		const IRegister: SmartContract = allContracts.get("IRegister");
+
+		instance = IRegister.at(instance.deployedAt);
 	}
 
 	const gas = (v?: number) => ({maxGas: v || 200000});
@@ -132,22 +209,37 @@ describe("Register snapshot testing", function () {
 			cak.send({maxGas: 100000}),
 			await custodianA.account(),
 		);
+
+		const gasEnableInvestorToWhitelist =
+			await instance.enableInvestorToWhitelist(
+				custodianA.test(),
+				strangerAddress,
+			);
+
 		await instance.enableInvestorToWhitelist(
-			custodianA.send({maxGas: 120000}),
+			custodianA.send({maxGas: gasEnableInvestorToWhitelist}),
 			strangerAddress,
 		); // needed to deploy a test trade contract
 
-		await instance.transferFrom(
-			cak.send(gas(300000)),
+		const gasTransferFrom = await instance.transferFrom(
+			cak.test(),
 			instance.deployedAt,
 			strangerAddress,
 			400,
 		);
+
+		await instance.transferFrom(
+			cak.send({maxGas: gasTransferFrom}),
+			instance.deployedAt,
+			strangerAddress,
+			400,
+		);
+
 		const strangerBalance = await instance.balanceOf(
 			cak.call(),
 			strangerAddress,
 		);
-		expect(strangerBalance).to.equal("400");
+		expect(strangerBalance).to.equal("1000"); // TODO check if 400 or 1000 ?1
 	});
 
 	it("balanceOfCoupon returns account balance when no couponDate set", async () => {

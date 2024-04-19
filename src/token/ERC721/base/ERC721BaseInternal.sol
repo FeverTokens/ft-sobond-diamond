@@ -3,21 +3,17 @@
 
 pragma solidity ^0.8.17;
 
-import { IERC721Receiver } from "../IERC721Receiver.sol";
-import { EnumerableMap } from "../../../data/EnumerableMap.sol";
-import { EnumerableSet } from "../../../data/EnumerableSet.sol";
-import { AddressUtils } from "../../../utils/AddressUtils.sol";
-import { IERC721BaseInternal } from "./IERC721BaseInternal.sol";
-import { ERC721BaseStorage } from "./ERC721BaseStorage.sol";
-import { ERC2771ContextInternal } from "../../../metatx/ERC2771ContextInternal.sol";
+import {IERC721Receiver} from "../IERC721Receiver.sol";
+import {EnumerableMap} from "../../../data/EnumerableMap.sol";
+import {EnumerableSet} from "../../../data/EnumerableSet.sol";
+import {AddressUtils} from "../../../utils/AddressUtils.sol";
+import {IERC721BaseInternal} from "./IERC721BaseInternal.sol";
+import {ERC721BaseStorage} from "./ERC721BaseStorage.sol";
 
 /**
  * @title Base ERC721 internal functions
  */
-abstract contract ERC721BaseInternal is
-    IERC721BaseInternal,
-    ERC2771ContextInternal
-{
+abstract contract ERC721BaseInternal is IERC721BaseInternal {
     using AddressUtils for address;
     using EnumerableMap for EnumerableMap.UintToAddressMap;
     using EnumerableSet for EnumerableSet.UintSet;
@@ -140,7 +136,7 @@ abstract contract ERC721BaseInternal is
         uint256 tokenId
     ) internal virtual {
         _handleTransferMessageValue(from, to, tokenId, msg.value);
-        if (!_isApprovedOrOwner(_msgSender(), tokenId))
+        if (!_isApprovedOrOwner(msg.sender, tokenId))
             revert ERC721Base__NotOwnerOrApproved();
         _transfer(from, to, tokenId);
     }
@@ -171,7 +167,7 @@ abstract contract ERC721BaseInternal is
         bytes memory data
     ) internal virtual {
         _handleTransferMessageValue(from, to, tokenId, msg.value);
-        if (!_isApprovedOrOwner(_msgSender(), tokenId))
+        if (!_isApprovedOrOwner(msg.sender, tokenId))
             revert ERC721Base__NotOwnerOrApproved();
         _safeTransfer(from, to, tokenId, data);
     }
@@ -182,7 +178,7 @@ abstract contract ERC721BaseInternal is
         address owner = _ownerOf(tokenId);
 
         if (operator == owner) revert ERC721Base__SelfApproval();
-        if (_msgSender() != owner && !_isApprovedForAll(owner, _msgSender()))
+        if (msg.sender != owner && !_isApprovedForAll(owner, msg.sender))
             revert ERC721Base__NotOwnerOrApproved();
 
         ERC721BaseStorage.layout().tokenApprovals[tokenId] = operator;
@@ -193,11 +189,11 @@ abstract contract ERC721BaseInternal is
         address operator,
         bool status
     ) internal virtual {
-        if (operator == _msgSender()) revert ERC721Base__SelfApproval();
-        ERC721BaseStorage.layout().operatorApprovals[_msgSender()][
+        if (operator == msg.sender) revert ERC721Base__SelfApproval();
+        ERC721BaseStorage.layout().operatorApprovals[msg.sender][
             operator
         ] = status;
-        emit ApprovalForAll(_msgSender(), operator, status);
+        emit ApprovalForAll(msg.sender, operator, status);
     }
 
     function _checkOnERC721Received(
@@ -213,7 +209,7 @@ abstract contract ERC721BaseInternal is
         bytes memory returnData = to.functionCall(
             abi.encodeWithSelector(
                 IERC721Receiver(to).onERC721Received.selector,
-                _msgSender(),
+                msg.sender,
                 from,
                 tokenId,
                 data

@@ -22,9 +22,26 @@ import {
 	today,
 } from "./dates";
 import {closeEvents, collectEvents, getEvents} from "./events";
-import {bilateralTrade} from "./shared";
+import {bilateralTrade} from "../tests-old/shared";
 
-const RegisterContractName = "Register";
+import {
+	DiamondCut,
+	FacetCutAction,
+	deployRegisterPackage,
+	getFunctionABI,
+} from "../scripts/diamond";
+
+const RegisterContractName = "RegisterDiamond";
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
+const registerPackages = [
+	"RegisterMetadata",
+	"CouponSnapshotManagement",
+	"RegisterRoleManagement",
+	"SmartContractAccessManagement",
+	"InvestorManagement",
+];
+
 const PrimaryIssuanceContractName = "PrimaryIssuance";
 const BilateralTradeContractName = "BilateralTrade";
 const CouponTradeContractName = "Coupon";
@@ -53,6 +70,7 @@ describe("Run tests of the Redemption contract", function () {
 	let maturityDate: number;
 	let futurTimestamp: number;
 	let expectedSupply: number;
+	let instance: SmartContractInstance;
 
 	async function init(): Promise<void> {
 		web3 = new Web3(
@@ -107,33 +125,96 @@ describe("Run tests of the Redemption contract", function () {
 		const currency = web3.utils.asciiToHex("SEK");
 		const unitVal = 100000;
 		const couponRate = web3.utils.asciiToHex("0.4");
-		// const creationDate = 1309002208; //UTC
-		// const issuanceDate = 1309102208; //UTC
-		// const couponDates = [firstCouponDate, 1671408000, 1672358400]; //UTC [17/12/2022/0h, 19/12/2022/0h, 30/12/2022/0h]
-		// const defaultCutofftime = 17 * 3600; //17:00
+		const creationDate = dates.creationDate;
+		const issuanceDate = dates.issuanceDate;
+		const couponDates = dates.couponDates;
+		const defaultCutofftime = dates.defaultCutofftime;
 
-		if (allContracts.get(RegisterContractName)) {
-			registerContract = allContracts.get(RegisterContractName);
-			register = await registerContract.deploy(
-				cak.newi({maxGas: registerGas}),
-				bondName,
-				isin,
-				expectedSupply,
-				currency,
-				unitVal,
-				couponRate,
-				dates.creationDate,
-				dates.issuanceDate,
-				maturityDate,
-				dates.couponDates,
-				dates.defaultCutofftime,
+		// deploy RegisterDiamondReadable
+		const RegisterDiamondReadable: SmartContract = allContracts.get(
+			"RegisterDiamondReadable",
+		);
+
+		const instanceRegisterDiamondReadable: SmartContractInstance =
+			await RegisterDiamondReadable.deploy(cak.newi({maxGas: registerGas}));
+
+		const addressRegisterDiamondReadable =
+			instanceRegisterDiamondReadable.deployedAt;
+
+		// deploy RegisterDiamondWritable
+		const RegisterDiamondWritable: SmartContract = allContracts.get(
+			"RegisterDiamondWritable",
+		);
+
+		const instanceRegisterDiamondWritable: SmartContractInstance =
+			await RegisterDiamondWritable.deploy(cak.newi({maxGas: registerGas}));
+
+		const addressRegisterDiamondWritable =
+			instanceRegisterDiamondWritable.deployedAt;
+
+		// create initData for RegisterDiamondWritable
+		const initializeABI = await getFunctionABI(
+			"RegisterDiamondWritable",
+			"initialize",
+		);
+
+		const initObject: any = [
+			bondName,
+			isin,
+			expectedSupply,
+			currency,
+			unitVal,
+			couponRate,
+			creationDate,
+			issuanceDate,
+			maturityDate,
+			couponDates,
+			defaultCutofftime,
+		];
+
+		const initData = web3.eth.abi.encodeFunctionCall(initializeABI, initObject);
+
+		// deploy RegisterDiamond
+		registerContract = allContracts.get(RegisterContractName);
+
+		instance = await registerContract.deploy(
+			cak.newi({maxGas: registerGas}),
+			addressRegisterDiamondReadable,
+			addressRegisterDiamondWritable,
+			initData,
+		);
+
+		// instanciate RegisterDiamondWritable
+		const intanceRegisterWritable = RegisterDiamondWritable.at(
+			instance.deployedAt,
+		);
+
+		// create register cuts
+		let registerCuts: DiamondCut[] = [];
+
+		// return an array of promises
+		const promises = registerPackages.map(async (registerPackageName) => {
+			const cut: DiamondCut = await deployRegisterPackage(
+				cak,
+				registerPackageName,
 			);
-		} else {
-			throw new Error(
-				RegisterContractName +
-					" contract not defined in the compilation result",
-			);
-		}
+			return cut;
+		});
+
+		// Use Promise.all to await all promises in parallel
+		registerCuts = await Promise.all(promises);
+
+		await intanceRegisterWritable.diamondCut(
+			cak.send({maxGas: registerGas}),
+			registerCuts,
+			ZERO_ADDRESS,
+			"0x",
+		);
+
+		const IRegister: SmartContract = allContracts.get("IRegister");
+
+		register = IRegister.at(instance.deployedAt);
+
 		await collectEvents(cak, register);
 
 		//Grant all roles and whitelist addresses
@@ -142,10 +223,12 @@ describe("Run tests of the Redemption contract", function () {
 			cak.send({maxGas: 100000}),
 			await bnd.account(),
 		);
+
 		await register.grantCstRole(
 			cak.send({maxGas: 100000}),
 			await custodianA.account(),
 		);
+
 		await register.grantCstRole(
 			cak.send({maxGas: 100000}),
 			await custodianB.account(),
@@ -158,20 +241,26 @@ describe("Run tests of the Redemption contract", function () {
 
 		// await register.enableInvestorToWhitelist(custodianA.send({maxGas:120000}), await cak.account()); // needed to deploy a test trade contract
 		// await register.enableInvestorToWhitelist(custodianA.send({maxGas:120000}), await bnd.account()); // B&D must be an investor as well
+		const gasEnableInvestorToWhitelist =
+			await register.enableInvestorToWhitelist(
+				custodianA.test(),
+				await investorA.account(),
+			);
+
 		await register.enableInvestorToWhitelist(
-			custodianA.send({maxGas: 130000}),
+			custodianA.send({maxGas: gasEnableInvestorToWhitelist}),
 			await investorA.account(),
 		);
 		await register.enableInvestorToWhitelist(
-			custodianA.send({maxGas: 130000}),
+			custodianA.send({maxGas: gasEnableInvestorToWhitelist}),
 			await investorB.account(),
 		);
 		await register.enableInvestorToWhitelist(
-			custodianA.send({maxGas: 130000}),
+			custodianA.send({maxGas: gasEnableInvestorToWhitelist}),
 			await investorC.account(),
 		);
 		await register.enableInvestorToWhitelist(
-			custodianA.send({maxGas: 130000}),
+			custodianA.send({maxGas: gasEnableInvestorToWhitelist}),
 			await investorD.account(),
 		);
 
@@ -191,6 +280,8 @@ describe("Run tests of the Redemption contract", function () {
 
 		await primary.validate(bnd.send({maxGas: 400000}));
 
+		console.log("trade being deployed");
+
 		//deploy bilateral trade
 		const trade = await allContracts
 			.get(BilateralTradeContractName)
@@ -199,6 +290,8 @@ describe("Run tests of the Redemption contract", function () {
 				register.deployedAt,
 				await investorA.account(),
 			);
+
+		console.log("trade deployed at : " + trade.deployedAt);
 
 		let hash2 = await register.atReturningHash(cak.call(), trade.deployedAt);
 		await register.enableContractToWhitelist(cak.send({maxGas: 100000}), hash2);
@@ -474,13 +567,19 @@ describe("Run tests of the Redemption contract", function () {
 			let nbDaysInPeriod = 180;
 			let cutOffTimeInSec = 16 * 3600;
 
+			console.log("Here we go again");
+
 			// Nedd all balances to be in an investor, not in the BnD
 			const bndBalance = await register.balanceOf(
 				cak.call(),
 				await bnd.account(),
 			);
+
+			console.log("BnD balance : " + bndBalance);
 			// await register.transferFrom(cak.send({maxGas: 500000}), await bnd.account(), await investorD.account(), bndBalance);
 			await bilateralTrade(register, bnd, investorD, bndBalance, today());
+
+			console.log("Everything is fine until here");
 
 			//Given a first coupon is deployed
 			const coupon = await allContracts
@@ -495,16 +594,23 @@ describe("Run tests of the Redemption contract", function () {
 				);
 
 			let hash = await register.atReturningHash(cak.call(), coupon.deployedAt);
+
+			const gasEnableInvestorToWhitelist =
+				await register.enableContractToWhitelist(cak.test(), hash);
+
 			await register.enableContractToWhitelist(
-				cak.send({maxGas: 100000}),
+				cak.send({maxGas: gasEnableInvestorToWhitelist}),
 				hash,
 			);
+
+			console.log("Works fine until here");
 
 			await coupon.setDateAsCurrentCoupon(payer.send({maxGas: 300000})); //implicit coupon validation
 
 			await mineBlock(recordDate + cutOffTimeInSec + 1000); // pass the cut of time
 
 			recordDate = addPart(maturityDate, "D", -1);
+
 			const redemption = await allContracts
 				.get(RedemptionTradeContractName)
 				.deploy(
@@ -516,13 +622,16 @@ describe("Run tests of the Redemption contract", function () {
 					cutOffTimeInSec,
 				);
 
+			console.log("Redemption deployed at : " + redemption.deployedAt);
+
 			//whitelist redemption contract into register
 			let hash1 = await register.atReturningHash(
 				cak.call(),
 				redemption.deployedAt,
 			);
+
 			await register.enableContractToWhitelist(
-				cak.send({maxGas: 120000}),
+				cak.send({maxGas: gasEnableInvestorToWhitelist}),
 				hash1,
 			);
 
@@ -535,8 +644,11 @@ describe("Run tests of the Redemption contract", function () {
 
 			const investorsAtMaturity: string[] =
 				await register.getInvestorListAtCoupon(payer.call(), maturityDate);
-			// console.log("List of investors at coupon",couponDate, investorsAtCoupon);
+
+			console.log("List of investors at coupon");
+
 			expect(investorsAtMaturity).not.include(await bnd.account());
+
 			const balancesAtMaturity = (
 				await Promise.all(
 					investorsAtMaturity.map((inv) =>
@@ -547,7 +659,9 @@ describe("Run tests of the Redemption contract", function () {
 				address: investorsAtMaturity[i],
 				bal: Number.parseInt(bal),
 			}));
+
 			console.log("Balances at coupon", balancesAtMaturity);
+
 			const totalBalance = balancesAtMaturity.reduce(
 				(prev, current) => prev + current.bal,
 				0,
@@ -558,16 +672,19 @@ describe("Run tests of the Redemption contract", function () {
 				cak.send({maxGas: 500000}),
 				await investorA.account(),
 			);
+
 			await redemption.toggleRedemptionPayment(
 				cak.send({maxGas: 500000}),
 				await investorB.account(),
 			);
+
 			await redemption.toggleRedemptionPayment(
 				cak.send({maxGas: 500000}),
 				await investorD.account(),
 			);
 
 			const totalSupply = await register.totalSupply(cak.call());
+
 			const primaryIssuanceBalance = await register.balanceOf(
 				cak.call(),
 				register.deployedAt,
@@ -575,10 +692,14 @@ describe("Run tests of the Redemption contract", function () {
 
 			expect(primaryIssuanceBalance).to.equal(totalSupply);
 
-			await register.burn(cak.send({maxGas: 400000}), totalSupply);
+			const gasBurn = await register.burn(cak.test(), totalSupply);
+			console.log("burn gas : " + gasBurn);
+			await register.burn(cak.send({maxGas: gasBurn}), totalSupply);
 
+			const gasMint = await register.mint(cak.test(), 1000);
+			console.log("mint gas : " + gasMint);
 			await expect(
-				register.mint(cak.send({maxGas: 400000}), 1000),
+				register.mint(cak.send({maxGas: gasMint}), 1000),
 			).to.be.rejectedWith(/the Register is closed/i);
 
 			getEvents(register).print();

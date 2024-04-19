@@ -3,22 +3,18 @@
 
 pragma solidity ^0.8.17;
 
-import { IERC20MetadataInternal } from "./IERC20MetadataInternal.sol";
-import { ERC20MetadataStorage } from "./ERC20MetadataStorage.sol";
-import { Initializable } from "../../../initializable/Initializable.sol";
+import {IERC20MetadataInternal} from "./IERC20MetadataInternal.sol";
+import {ERC20MetadataStorage} from "./ERC20MetadataStorage.sol";
 
 /**
  * @title ERC20Metadata internal functions
  */
-abstract contract ERC20MetadataInternal is
-    IERC20MetadataInternal,
-    Initializable
-{
+abstract contract ERC20MetadataInternal is IERC20MetadataInternal {
     function __init__ERC20MetadataInternal(
         string calldata name_,
         string calldata symbol_,
         uint8 decimals_
-    ) internal initializer {
+    ) internal {
         __init_ERC20MetadataInternal_unchained(name_, symbol_, decimals_);
     }
 
@@ -26,7 +22,7 @@ abstract contract ERC20MetadataInternal is
         string calldata name_,
         string calldata symbol_,
         uint8 decimals_
-    ) internal initializer {
+    ) internal {
         ERC20MetadataStorage.Layout storage l = ERC20MetadataStorage.layout();
 
         l.name = name_;

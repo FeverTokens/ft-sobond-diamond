@@ -3,19 +3,19 @@
 
 pragma solidity ^0.8.17;
 
-import { IRegisterMetadataInternal } from "./IRegisterMetadataInternal.sol";
-import { RegisterMetadataStorage } from "./RegisterMetadataStorage.sol";
-import { CouponSnapshotManagementInternal } from "../snapshot/CouponSnapshotManagementInternal.sol";
-import { InvestorManagementInternal } from "../investors/InvestorManagementInternal.sol";
-import { ERC2771ContextInternal } from "../../metatx/ERC2771ContextInternal.sol";
-import { ContextInternal } from "../../metatx/ContextInternal.sol";
+import {IRegisterMetadataInternal} from "./IRegisterMetadataInternal.sol";
+import {RegisterMetadataStorage} from "./RegisterMetadataStorage.sol";
+import {CouponSnapshotManagementInternal} from "../snapshot/CouponSnapshotManagementInternal.sol";
+import {InvestorManagementInternal} from "../investors/InvestorManagementInternal.sol";
+import {ERC20Metadata} from "../../token/ERC20/extensions/ERC20Metadata.sol";
 
 abstract contract RegisterMetadataInternal is
     IRegisterMetadataInternal,
     InvestorManagementInternal,
-    CouponSnapshotManagementInternal
+    CouponSnapshotManagementInternal,
+    ERC20Metadata
 {
-    function _initialize(
+    function __init__RegisterMetadata(
         string calldata name_,
         string calldata isin_,
         uint256 expectedSupply_,
@@ -27,7 +27,7 @@ abstract contract RegisterMetadataInternal is
         uint256 maturityDate_,
         uint256[] memory couponDates_,
         uint256 cutofftime_
-    ) internal initializer {
+    ) internal {
         RegisterMetadataStorage.Layout storage l = RegisterMetadataStorage
             .layout();
 
@@ -46,40 +46,23 @@ abstract contract RegisterMetadataInternal is
         l.data.couponDates = couponDates_;
         l.data.cutOffTime = cutofftime_;
 
+        // set the primary issuance account to the contract address
+        l.primaryIssuanceAccount = address(this);
+
         // emit Debug("before coupon init", couponDates_.length,0, gasleft());
         _initCurrentCoupon();
         // emit Debug("after coupon init", 0,0, gasleft());
 
         l.status = Status.Draft;
-        emit NewBondDrafted(_msgSender(), name_, isin_);
+        emit NewBondDrafted(msg.sender, name_, isin_);
         emit RegisterStatusChanged(
-            _msgSender(),
+            msg.sender,
             l.data.name,
             l.data.isin,
             l.status
         );
 
         // emit Debug("end of constructor", 0,0, gasleft());
-    }
-
-    function _msgSender()
-        internal
-        view
-        virtual
-        override(ContextInternal, CouponSnapshotManagementInternal)
-        returns (address)
-    {
-        return CouponSnapshotManagementInternal._msgSender();
-    }
-
-    function _msgData()
-        internal
-        view
-        virtual
-        override(ContextInternal, CouponSnapshotManagementInternal)
-        returns (bytes calldata)
-    {
-        return CouponSnapshotManagementInternal._msgData();
     }
 
     function _primaryIssuanceAccount() internal view returns (address) {
@@ -89,7 +72,7 @@ abstract contract RegisterMetadataInternal is
     }
 
     function _setName(string memory name_) internal {
-        require(_hasRole(CAK_ROLE, _msgSender()), "Caller must be CAK");
+        require(_isCAK(msg.sender), "Caller must be CAK");
         RegisterMetadataStorage.Layout storage l = RegisterMetadataStorage
             .layout();
         l.data.name = name_;
@@ -105,7 +88,7 @@ abstract contract RegisterMetadataInternal is
         uint256 maturityDate_,
         uint256 cutOffTime_
     ) internal {
-        require(_hasRole(CAK_ROLE, _msgSender()), "Caller must be CAK");
+        require(_isCAK(msg.sender), "Caller must be CAK");
 
         RegisterMetadataStorage.Layout storage l = RegisterMetadataStorage
             .layout();
@@ -133,7 +116,7 @@ abstract contract RegisterMetadataInternal is
     }
 
     function _addCouponDate(uint256 date) internal {
-        require(_hasRole(CAK_ROLE, _msgSender()), "Caller must be CAK");
+        require(_isCAK(msg.sender), "Caller must be CAK");
 
         RegisterMetadataStorage.Layout storage l = RegisterMetadataStorage
             .layout();
@@ -181,7 +164,7 @@ abstract contract RegisterMetadataInternal is
     }
 
     function _delCouponDate(uint256 date) internal {
-        require(_hasRole(CAK_ROLE, _msgSender()), "Caller must be CAK");
+        require(_isCAK(msg.sender), "Caller must be CAK");
 
         RegisterMetadataStorage.Layout storage l = RegisterMetadataStorage
             .layout();
@@ -248,7 +231,7 @@ abstract contract RegisterMetadataInternal is
     }
 
     function _setIsinSymbol(string memory _isinSymbol) internal {
-        require(_hasRole(CAK_ROLE, _msgSender()), "Caller must be CAK");
+        require(_isCAK(msg.sender), "Caller must be CAK");
 
         RegisterMetadataStorage.Layout storage l = RegisterMetadataStorage
             .layout();
@@ -256,7 +239,7 @@ abstract contract RegisterMetadataInternal is
     }
 
     function _setCurrency(bytes32 _currency) internal {
-        require(_hasRole(CAK_ROLE, _msgSender()), "Caller must be CAK");
+        require(_isCAK(msg.sender), "Caller must be CAK");
 
         RegisterMetadataStorage.Layout storage l = RegisterMetadataStorage
             .layout();
@@ -276,7 +259,7 @@ abstract contract RegisterMetadataInternal is
     }
 
     function _setCreationDate(uint256 _creationDate) internal {
-        require(_hasRole(CAK_ROLE, _msgSender()), "Caller must be CAK");
+        require(_isCAK(msg.sender), "Caller must be CAK");
 
         RegisterMetadataStorage.Layout storage l = RegisterMetadataStorage
             .layout();
@@ -284,7 +267,7 @@ abstract contract RegisterMetadataInternal is
     }
 
     function _setIssuanceDate(uint256 issuanceDate_) internal {
-        require(_hasRole(CAK_ROLE, _msgSender()), "Caller must be CAK");
+        require(_isCAK(msg.sender), "Caller must be CAK");
 
         RegisterMetadataStorage.Layout storage l = RegisterMetadataStorage
             .layout();
@@ -297,7 +280,7 @@ abstract contract RegisterMetadataInternal is
     ) internal {
         //TODO: rename this to setCurrentSnapshotDateTime()
         require(
-            _isContractAllowed(_msgSender()),
+            _isContractAllowed(msg.sender),
             "This contract is not whitelisted"
         ); //can be called only by Coupon smart contract
         require(
@@ -314,7 +297,7 @@ abstract contract RegisterMetadataInternal is
     function _toggleFrozen() internal virtual {
         RegisterMetadataStorage.Layout storage l = RegisterMetadataStorage
             .layout();
-        require(_hasRole(CAK_ROLE, _msgSender()), "Caller must be CAK");
+        require(_isCAK(msg.sender), "Caller must be CAK");
         if (l.status == Status.Issued) {
             l.status = Status.Frozen;
         } else if (l.status == Status.Frozen) {
@@ -325,7 +308,7 @@ abstract contract RegisterMetadataInternal is
             );
 
         emit RegisterStatusChanged(
-            _msgSender(),
+            msg.sender,
             l.data.name,
             l.data.isin,
             l.status
@@ -333,7 +316,7 @@ abstract contract RegisterMetadataInternal is
     }
 
     function _setExpectedSupply(uint256 expectedSupply_) internal virtual {
-        require(_hasRole(CAK_ROLE, _msgSender()), "Caller must be CAK");
+        require(_isCAK(msg.sender), "Caller must be CAK");
         RegisterMetadataStorage.Layout storage l = RegisterMetadataStorage
             .layout();
         require(
@@ -351,7 +334,7 @@ abstract contract RegisterMetadataInternal is
         // can only be called by allowed smart contract (typically the redemption contrat)
         /** @dev enforce caller contract is whitelisted */
         require(
-            _isContractAllowed(_msgSender()),
+            _isContractAllowed(msg.sender),
             "This contract is not whitelisted"
         );
         //make sure the investor is an allowed investor
@@ -418,7 +401,7 @@ abstract contract RegisterMetadataInternal is
     function _makeReady() internal {
         RegisterMetadataStorage.Layout storage l = RegisterMetadataStorage
             .layout();
-        require((_hasRole(CAK_ROLE, _msgSender())), "Caller must be CAK");
+        require((_isCAK(msg.sender)), "Caller must be CAK");
         require(l.status == Status.Draft, "Register should be in Draft state");
         require(l.data.expectedSupply > 0, "expected supply cannot be zero");
         require(
@@ -428,7 +411,7 @@ abstract contract RegisterMetadataInternal is
         _mint(l.primaryIssuanceAccount, l.data.expectedSupply);
         l.status = Status.Ready;
         emit RegisterStatusChanged(
-            _msgSender(),
+            msg.sender,
             l.data.name,
             l.data.isin,
             l.status
@@ -442,12 +425,12 @@ abstract contract RegisterMetadataInternal is
     function _revertReady() internal {
         RegisterMetadataStorage.Layout storage l = RegisterMetadataStorage
             .layout();
-        require((_hasRole(CAK_ROLE, _msgSender())), "Caller must be CAK");
+        require((_isCAK(msg.sender)), "Caller must be CAK");
         require(l.status == Status.Ready, "Register should be in Ready state");
         _burn(l.primaryIssuanceAccount, l.data.expectedSupply);
         l.status = Status.Draft;
         emit RegisterStatusChanged(
-            _msgSender(),
+            msg.sender,
             l.data.name,
             l.data.isin,
             l.status
@@ -459,13 +442,13 @@ abstract contract RegisterMetadataInternal is
      */
     function _publicMessage(address to, string memory message) internal {
         require(
-            _hasRole(CAK_ROLE, _msgSender()) ||
-                _hasRole(BND_ROLE, _msgSender()) ||
-                _hasRole(CST_ROLE, _msgSender()) ||
-                _hasRole(PAY_ROLE, _msgSender()),
+            _isCAK(msg.sender) ||
+                _isBnD(msg.sender) ||
+                _isCustodian(msg.sender) ||
+                _isPay(msg.sender),
             "The caller must have a role in the transaction"
         );
-        emit PublicMessage(_msgSender(), to, message);
+        emit PublicMessage(msg.sender, to, message);
     }
 
     /// @dev called by CouponInternal to set coupon rate

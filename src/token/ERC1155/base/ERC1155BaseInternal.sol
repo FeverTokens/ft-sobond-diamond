@@ -3,20 +3,16 @@
 
 pragma solidity ^0.8.17;
 
-import { IERC1155BaseInternal } from "./IERC1155BaseInternal.sol";
-import { IERC1155Receiver } from "../IERC1155Receiver.sol";
-import { ERC1155BaseStorage } from "./ERC1155BaseStorage.sol";
-import { AddressUtils } from "../../../utils/AddressUtils.sol";
-import { ERC2771ContextInternal } from "../../../metatx/ERC2771ContextInternal.sol";
+import {IERC1155BaseInternal} from "./IERC1155BaseInternal.sol";
+import {IERC1155Receiver} from "../IERC1155Receiver.sol";
+import {ERC1155BaseStorage} from "./ERC1155BaseStorage.sol";
+import {AddressUtils} from "../../../utils/AddressUtils.sol";
 
 /**
  * @title Base ERC1155 internal functions
  * @dev derived from https://github.com/OpenZeppelin/openzeppelin-contracts/ (MIT license)
  */
-abstract contract ERC1155BaseInternal is
-    IERC1155BaseInternal,
-    ERC2771ContextInternal
-{
+abstract contract ERC1155BaseInternal is IERC1155BaseInternal {
     using AddressUtils for address;
 
     /**
@@ -65,11 +61,11 @@ abstract contract ERC1155BaseInternal is
     }
 
     function _setApprovalForAll(address operator, bool status) public virtual {
-        if (_msgSender() == operator) revert ERC1155Base__SelfApproval();
-        ERC1155BaseStorage.layout().operatorApprovals[_msgSender()][
+        if (msg.sender == operator) revert ERC1155Base__SelfApproval();
+        ERC1155BaseStorage.layout().operatorApprovals[msg.sender][
             operator
         ] = status;
-        emit ApprovalForAll(_msgSender(), operator, status);
+        emit ApprovalForAll(msg.sender, operator, status);
     }
 
     /**
@@ -89,7 +85,7 @@ abstract contract ERC1155BaseInternal is
         if (account == address(0)) revert ERC1155Base__MintToZeroAddress();
 
         _beforeTokenTransfer(
-            _msgSender(),
+            msg.sender,
             address(0),
             account,
             _asSingletonArray(id),
@@ -99,7 +95,7 @@ abstract contract ERC1155BaseInternal is
 
         ERC1155BaseStorage.layout().balances[id][account] += amount;
 
-        emit TransferSingle(_msgSender(), address(0), account, id, amount);
+        emit TransferSingle(msg.sender, address(0), account, id, amount);
     }
 
     /**
@@ -118,7 +114,7 @@ abstract contract ERC1155BaseInternal is
         _mint(account, id, amount, data);
 
         _doSafeTransferAcceptanceCheck(
-            _msgSender(),
+            msg.sender,
             address(0),
             account,
             id,
@@ -146,7 +142,7 @@ abstract contract ERC1155BaseInternal is
             revert ERC1155Base__ArrayLengthMismatch();
 
         _beforeTokenTransfer(
-            _msgSender(),
+            msg.sender,
             address(0),
             account,
             ids,
@@ -164,7 +160,7 @@ abstract contract ERC1155BaseInternal is
             }
         }
 
-        emit TransferBatch(_msgSender(), address(0), account, ids, amounts);
+        emit TransferBatch(msg.sender, address(0), account, ids, amounts);
     }
 
     /**
@@ -183,7 +179,7 @@ abstract contract ERC1155BaseInternal is
         _mintBatch(account, ids, amounts, data);
 
         _doSafeBatchTransferAcceptanceCheck(
-            _msgSender(),
+            msg.sender,
             address(0),
             account,
             ids,
@@ -206,7 +202,7 @@ abstract contract ERC1155BaseInternal is
         if (account == address(0)) revert ERC1155Base__BurnFromZeroAddress();
 
         _beforeTokenTransfer(
-            _msgSender(),
+            msg.sender,
             account,
             address(0),
             _asSingletonArray(id),
@@ -224,7 +220,7 @@ abstract contract ERC1155BaseInternal is
             balances[account] -= amount;
         }
 
-        emit TransferSingle(_msgSender(), account, address(0), id, amount);
+        emit TransferSingle(msg.sender, account, address(0), id, amount);
     }
 
     /**
@@ -242,14 +238,7 @@ abstract contract ERC1155BaseInternal is
         if (ids.length != amounts.length)
             revert ERC1155Base__ArrayLengthMismatch();
 
-        _beforeTokenTransfer(
-            _msgSender(),
-            account,
-            address(0),
-            ids,
-            amounts,
-            ""
-        );
+        _beforeTokenTransfer(msg.sender, account, address(0), ids, amounts, "");
 
         mapping(uint256 => mapping(address => uint256))
             storage balances = ERC1155BaseStorage.layout().balances;
@@ -263,7 +252,7 @@ abstract contract ERC1155BaseInternal is
             }
         }
 
-        emit TransferBatch(_msgSender(), account, address(0), ids, amounts);
+        emit TransferBatch(msg.sender, account, address(0), ids, amounts);
     }
 
     /**

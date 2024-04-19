@@ -3,41 +3,41 @@
 
 pragma solidity ^0.8.17;
 
-import { InvestorManagementStorage } from "../investors/InvestorManagementStorage.sol";
-import { InvestorManagementInternal } from "../investors/InvestorManagementInternal.sol";
-import { DelegateInvestorManagementStorage } from "./DelegateInvestorManagementStorage.sol";
-import { IDelegateInvestorManagementInternal } from "./IDelegateInvestorManagementInternal.sol";
+import {InvestorManagementStorage} from "../investors/InvestorManagementStorage.sol";
+import {InvestorManagementInternal} from "../investors/InvestorManagementInternal.sol";
+import {DelegateInvestorManagementStorage} from "./DelegateInvestorManagementStorage.sol";
+import {IDelegateInvestorManagementInternal} from "./IDelegateInvestorManagementInternal.sol";
 
 contract DelegateInvestorManagementInternal is
     IDelegateInvestorManagementInternal,
     InvestorManagementInternal
 {
     function _setCustodianDelegate(address delegate) internal {
-        require(_hasRole(CST_ROLE, _msgSender()), "Caller must be CST");
+        require(_isCustodian(msg.sender), "Caller must be CST");
         DelegateInvestorManagementStorage.Layout
             storage l = DelegateInvestorManagementStorage.layout();
-        address oldDelegate = l.custodianDelegates[_msgSender()];
-        l.custodianDelegates[_msgSender()] = delegate;
+        address oldDelegate = l.custodianDelegates[msg.sender];
+        l.custodianDelegates[msg.sender] = delegate;
         if (oldDelegate != address(0)) {
-            emit CustodianDelegateUnset(_msgSender(), oldDelegate);
+            emit CustodianDelegateUnset(msg.sender, oldDelegate);
         }
-        emit CustodianDelegateSet(_msgSender(), delegate);
+        emit CustodianDelegateSet(msg.sender, delegate);
     }
 
     function _unsetCustodianDelegate() internal {
-        require(_hasRole(CST_ROLE, _msgSender()), "Caller must be CST");
+        require(_isCustodian(msg.sender), "Caller must be CST");
         DelegateInvestorManagementStorage.Layout
             storage l = DelegateInvestorManagementStorage.layout();
-        address oldDelegate = l.custodianDelegates[_msgSender()];
-        l.custodianDelegates[_msgSender()] = address(0);
-        emit CustodianDelegateUnset(_msgSender(), oldDelegate);
+        address oldDelegate = l.custodianDelegates[msg.sender];
+        l.custodianDelegates[msg.sender] = address(0);
+        emit CustodianDelegateUnset(msg.sender, oldDelegate);
     }
 
     function _isCustodianDelegate(
         address custodian,
         address delegate
     ) internal view returns (bool) {
-        if (!_hasRole(CST_ROLE, custodian)) {
+        if (!_isCustodian(custodian)) {
             return false;
         }
         DelegateInvestorManagementStorage.Layout
@@ -60,7 +60,7 @@ contract DelegateInvestorManagementInternal is
         require(investor_ != address(0), "investor address cannot be zero");
 
         require(
-            _isCustodianDelegate(delegator, _msgSender()),
+            _isCustodianDelegate(delegator, msg.sender),
             "Caller must be a custodian delegate"
         );
 
@@ -76,7 +76,7 @@ contract DelegateInvestorManagementInternal is
             .layout();
 
         require(
-            _isCustodianDelegate(delegator_, _msgSender()),
+            _isCustodianDelegate(delegator_, msg.sender),
             "Caller must be a custodian delegate"
         );
         require(

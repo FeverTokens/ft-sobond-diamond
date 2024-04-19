@@ -19,8 +19,23 @@ import {
 	registerGas,
 } from "./gas.constant";
 import {makeBondDate} from "./dates";
+import {
+	DiamondCut,
+	FacetCutAction,
+	deployRegisterPackage,
+	getFunctionABI,
+} from "../scripts/diamond";
 
-const RegisterContractName = "Register";
+const RegisterContractName = "RegisterDiamond";
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
+const registerPackages = [
+	"RegisterMetadata",
+	"CouponSnapshotManagement",
+	"RegisterRoleManagement",
+	"SmartContractAccessManagement",
+	"InvestorManagement",
+];
 const PrimaryIssuanceContractName = "PrimaryIssuance";
 
 describe("Register (Bond Issuance)", function () {
@@ -37,6 +52,7 @@ describe("Register (Bond Issuance)", function () {
 	let custodianAddress: string;
 	let strangerAddress: string;
 	let bndAddress: string;
+	let instance: SmartContractInstance;
 
 	async function deployRegisterContract(): Promise<void> {
 		web3 = new Web3(
@@ -71,35 +87,98 @@ describe("Register (Bond Issuance)", function () {
 		const currency = web3.utils.asciiToHex("SEK");
 		const unitVal = 100000;
 		const couponRate = web3.utils.asciiToHex("0.4");
-		// const creationDate = 1309002208; //UTC
-		// const issuanceDate = 1309102208; //UTC
-		// const maturityDate = 1309202208; //UTC
-		// const couponDates = [1309302208, 1309402208]; //UTC
-		// const defaultCutofftime = 17 * 3600; //17:00
+		const creationDate = dates.creationDate;
+		const issuanceDate = dates.issuanceDate;
+		const maturityDate = dates.maturityDate;
+		const couponDates = dates.couponDates;
+		const defaultCutofftime = dates.defaultCutofftime;
 
-		if (allContracts.get(RegisterContractName)) {
-			Register = allContracts.get(RegisterContractName);
-			registerInstance = await Register.deploy(
-				cak.newi({maxGas: registerGas}),
-				bondName,
-				isin,
-				expectedSupply,
-				currency,
-				unitVal,
-				couponRate,
-				dates.creationDate,
-				dates.issuanceDate,
-				dates.maturityDate,
-				dates.couponDates,
-				dates.defaultCutofftime,
+		// deploy RegisterDiamondReadable
+		const RegisterDiamondReadable: SmartContract = allContracts.get(
+			"RegisterDiamondReadable",
+		);
+
+		const instanceRegisterDiamondReadable: SmartContractInstance =
+			await RegisterDiamondReadable.deploy(cak.newi({maxGas: registerGas}));
+
+		const addressRegisterDiamondReadable =
+			instanceRegisterDiamondReadable.deployedAt;
+
+		// deploy RegisterDiamondWritable
+		const RegisterDiamondWritable: SmartContract = allContracts.get(
+			"RegisterDiamondWritable",
+		);
+
+		const instanceRegisterDiamondWritable: SmartContractInstance =
+			await RegisterDiamondWritable.deploy(cak.newi({maxGas: registerGas}));
+
+		const addressRegisterDiamondWritable =
+			instanceRegisterDiamondWritable.deployedAt;
+
+		// create initData for RegisterDiamondWritable
+		const initializeABI = await getFunctionABI(
+			"RegisterDiamondWritable",
+			"initialize",
+		);
+
+		const initObject: any = [
+			bondName,
+			isin,
+			expectedSupply,
+			currency,
+			unitVal,
+			couponRate,
+			creationDate,
+			issuanceDate,
+			maturityDate,
+			couponDates,
+			defaultCutofftime,
+		];
+
+		const initData = web3.eth.abi.encodeFunctionCall(initializeABI, initObject);
+
+		// deploy RegisterDiamond
+		Register = allContracts.get(RegisterContractName);
+
+		instance = await Register.deploy(
+			cak.newi({maxGas: registerGas}),
+			addressRegisterDiamondReadable,
+			addressRegisterDiamondWritable,
+			initData,
+		);
+
+		// instanciate RegisterDiamondWritable
+		const intanceRegisterWritable = RegisterDiamondWritable.at(
+			instance.deployedAt,
+		);
+
+		// create register cuts
+		let registerCuts: DiamondCut[] = [];
+
+		// return an array of promises
+		const promises = registerPackages.map(async (registerPackageName) => {
+			const cut: DiamondCut = await deployRegisterPackage(
+				cak,
+				registerPackageName,
 			);
-		} else {
-			throw new Error(
-				RegisterContractName +
-					" contract not defined in the compilation result",
-			);
-		}
+			return cut;
+		});
+
+		// Use Promise.all to await all promises in parallel
+		registerCuts = await Promise.all(promises);
+
+		await intanceRegisterWritable.diamondCut(
+			cak.send({maxGas: registerGas}),
+			registerCuts,
+			ZERO_ADDRESS,
+			"0x",
+		);
+
+		const IRegister: SmartContract = allContracts.get("IRegister");
+
+		registerInstance = IRegister.at(instance.deployedAt);
 	}
+
 	describe("status lifecyle", function () {
 		beforeEach(async () => {
 			await deployRegisterContract();
@@ -152,6 +231,7 @@ describe("Register (Bond Issuance)", function () {
 				cak.send({maxGas: 100000}),
 				bndAddress,
 			);
+
 			const primaryInstance = await allContracts
 				.get(PrimaryIssuanceContractName)
 				.deploy(bnd.newi({maxGas: 1000000}), registerInstance.deployedAt, 1500);
@@ -161,25 +241,32 @@ describe("Register (Bond Issuance)", function () {
 				cak.call(),
 				primaryInstance.deployedAt,
 			);
+
 			await registerInstance.enableContractToWhitelist(
 				cak.send({maxGas: 100000}),
 				primaryHash,
 			);
+
 			const before = await registerInstance.status(stranger.call());
 			await registerInstance.grantCstRole(
 				cak.send({maxGas: 100000}),
 				await custodian.account(),
 			);
+
 			await registerInstance.enableInvestorToWhitelist(
-				custodian.send({maxGas: 120000}),
+				custodian.send({maxGas: 1200000}),
 				bndAddress,
 			); // needed to deploy a test trade contract
 
 			await registerInstance.makeReady(cak.send({maxGas: makeReadyGas}));
 
 			//Act
+			const gas = await primaryInstance.validate(bnd.test());
+
+			console.log("PrimaryInstance validate Gas: ", gas);
+
 			const txValidatePrimary = await primaryInstance.validate(
-				bnd.send({maxGas: 220000}),
+				bnd.send({maxGas: gas}),
 			);
 			// console.log((await web3.eth.getTransactionReceipt(txValidatePrimary)).logs); //uncomment this for debugging
 
@@ -218,8 +305,16 @@ describe("Register (Bond Issuance)", function () {
 				cak.call(),
 				primaryInstance.deployedAt,
 			);
+
+			const gas = await registerInstance.enableContractToWhitelist(
+				cak.test(),
+				primaryHash,
+			);
+
+			console.log("EnableContractToWhitelist Gas: ", gas);
+
 			await registerInstance.enableContractToWhitelist(
-				cak.send({maxGas: 100000}),
+				cak.send({maxGas: gas}),
 				primaryHash,
 			);
 
@@ -229,6 +324,7 @@ describe("Register (Bond Issuance)", function () {
 			const totalSupply = Number.parseInt(
 				await registerInstance.totalSupply(cak.call()),
 			);
+
 			const intitialPrimaryIssuanceBal = Number.parseInt(
 				await registerInstance.balanceOf(
 					cak.call(),
@@ -237,12 +333,22 @@ describe("Register (Bond Issuance)", function () {
 			);
 
 			// Send 300 to investor
-			await registerInstance.transferFrom(
-				cak.send({maxGas: 500_000}),
+			const gasTransferFrom = await registerInstance.transferFrom(
+				cak.test(),
 				registerInstance.deployedAt,
 				investorAddress,
 				300,
 			);
+
+			await registerInstance.transferFrom(
+				cak.send({maxGas: gasTransferFrom}),
+				registerInstance.deployedAt,
+				investorAddress,
+				300,
+			);
+
+			console.log("working like a charm");
+
 			const step2_PrimaryIssuanceBal = Number.parseInt(
 				await registerInstance.balanceOf(
 					cak.call(),
@@ -250,9 +356,12 @@ describe("Register (Bond Issuance)", function () {
 				),
 			);
 
+			console.log("Still working like a charm");
+
 			// Purchase the bond
+			const gasValidate = await primaryInstance.validate(bnd.test());
 			const txValidatePrimary = await primaryInstance.validate(
-				bnd.send({maxGas: 250000}),
+				bnd.send({maxGas: gasValidate}),
 			);
 			const details = await primaryInstance.getDetails(bnd.call());
 			const step3_PrimaryIssuanceBal = Number.parseInt(

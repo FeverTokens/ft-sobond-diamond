@@ -3,14 +3,42 @@
 
 pragma solidity ^0.8.17;
 
-import { IRegisterRoleManagement } from "./IRegisterRoleManagement.sol";
-import { RegisterRoleManagementInternal } from "./RegisterRoleManagementInternal.sol";
-import { IAccessControl } from "../../access/rbac/AccessControl.sol";
+import {IRegisterRoleManagement} from "./IRegisterRoleManagement.sol";
+import {RegisterRoleManagementInternal} from "./RegisterRoleManagementInternal.sol";
+import {IAccessControl, AccessControl} from "../../access/rbac/AccessControl.sol";
 
 contract RegisterRoleManagement is
     IRegisterRoleManagement,
     RegisterRoleManagementInternal
 {
+    /**
+     * @inheritdoc IRegisterRoleManagement
+     */
+    function CAK_ROLE() public pure returns (bytes32) {
+        return _CAK_ROLE();
+    }
+
+    /**
+     * @inheritdoc IRegisterRoleManagement
+     */
+    function BND_ROLE() public pure returns (bytes32) {
+        return _BND_ROLE();
+    }
+
+    /**
+     * @inheritdoc IRegisterRoleManagement
+     */
+    function CST_ROLE() public pure returns (bytes32) {
+        return _CST_ROLE();
+    }
+
+    /**
+     * @inheritdoc IRegisterRoleManagement
+     */
+    function PAY_ROLE() public pure returns (bytes32) {
+        return _PAY_ROLE();
+    }
+
     /**
      * @inheritdoc IRegisterRoleManagement
      */
@@ -77,14 +105,20 @@ contract RegisterRoleManagement is
     /**
      * @inheritdoc IAccessControl
      */
-    function grantRole(bytes32 role, address account) public virtual override {
+    function grantRole(
+        bytes32 role,
+        address account
+    ) public override(IAccessControl, AccessControl) {
         _grantRole(role, account);
     }
 
     /**
      * @inheritdoc IAccessControl
      */
-    function revokeRole(bytes32 role, address account) public virtual override {
+    function revokeRole(
+        bytes32 role,
+        address account
+    ) public override(IAccessControl, AccessControl) {
         _revokeRole(role, account);
     }
 

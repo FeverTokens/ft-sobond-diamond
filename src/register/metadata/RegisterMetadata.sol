@@ -3,8 +3,8 @@
 
 pragma solidity ^0.8.17;
 
-import { IRegisterMetadata } from "./IRegisterMetadata.sol";
-import { RegisterMetadataInternal } from "./RegisterMetadataInternal.sol";
+import {IRegisterMetadata} from "./IRegisterMetadata.sol";
+import {RegisterMetadataInternal} from "./RegisterMetadataInternal.sol";
 
 contract RegisterMetadata is IRegisterMetadata, RegisterMetadataInternal {
     /**

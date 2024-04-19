@@ -3,21 +3,17 @@
 
 pragma solidity ^0.8.17;
 
-import { IAccessControlInternal } from "./IAccessControlInternal.sol";
-import { AccessControlStorage } from "./AccessControlStorage.sol";
-import { EnumerableSet } from "../../data/EnumerableSet.sol";
-import { AddressUtils } from "../../utils/AddressUtils.sol";
-import { UintUtils } from "../../utils/UintUtils.sol";
-import { ContextInternal } from "../../metatx/ContextInternal.sol";
+import {IAccessControlInternal} from "./IAccessControlInternal.sol";
+import {AccessControlStorage} from "./AccessControlStorage.sol";
+import {EnumerableSet} from "../../data/EnumerableSet.sol";
+import {AddressUtils} from "../../utils/AddressUtils.sol";
+import {UintUtils} from "../../utils/UintUtils.sol";
 
 /**
  * @title Role-based access control system
  * @dev derived from https://github.com/OpenZeppelin/openzeppelin-contracts (MIT license)
  */
-abstract contract AccessControlInternal is
-    IAccessControlInternal,
-    ContextInternal
-{
+abstract contract AccessControlInternal is IAccessControlInternal {
     using AddressUtils for address;
     using EnumerableSet for EnumerableSet.AddressSet;
     using UintUtils for uint256;
@@ -50,7 +46,7 @@ abstract contract AccessControlInternal is
      * @param role role to query
      */
     function _checkRole(bytes32 role) internal view virtual {
-        _checkRole(role, _msgSender());
+        _checkRole(role, msg.sender);
     }
 
     /**
@@ -102,7 +98,7 @@ abstract contract AccessControlInternal is
      */
     function _grantRole(bytes32 role, address account) internal virtual {
         AccessControlStorage.layout().roles[role].roleMembers.add(account);
-        emit RoleGranted(role, account, _msgSender());
+        emit RoleGranted(role, account, msg.sender);
     }
 
     /*
@@ -112,7 +108,7 @@ abstract contract AccessControlInternal is
      */
     function _revokeRole(bytes32 role, address account) internal virtual {
         AccessControlStorage.layout().roles[role].roleMembers.remove(account);
-        emit RoleRevoked(role, account, _msgSender());
+        emit RoleRevoked(role, account, msg.sender);
     }
 
     /**
@@ -120,7 +116,7 @@ abstract contract AccessControlInternal is
      * @param role role to renounce
      */
     function _renounceRole(bytes32 role) internal virtual {
-        _revokeRole(role, _msgSender());
+        _revokeRole(role, msg.sender);
     }
 
     /**

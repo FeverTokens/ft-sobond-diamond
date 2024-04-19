@@ -6,16 +6,16 @@ pragma solidity ^0.8.17;
 interface IInvestorManagementInternal {
     /**
      * @notice Investor info
-     * @param investor The investor
-     * @param allowed True if investor whitelisted for transfer
      * @param index Zero-based index on investor list
      * @param custodian The custodian
+     * @param investor The investor
+     * @param allowed True if investor whitelisted for transfer
      */
     struct InvestorInfo {
-        address investor;
-        bool allowed; /// @dev true if investor whitelisted for transfer
         uint256 index; /// @dev zero-based index on investor list
         address custodian;
+        address investor;
+        bool allowed; /// @dev true if investor whitelisted for transfer
     }
 
     /**

@@ -3,11 +3,9 @@
 
 pragma solidity ^0.8.17;
 
-import { IERC20 } from "../IERC20.sol"; /// @dev this is required to inherit documentation only
-import { IERC20Base } from "./IERC20Base.sol";
-import { ERC20BaseInternal } from "./ERC20BaseInternal.sol";
-
-// import { ERC2771ContextInternal } from "../../../metatx/ERC2771ContextInternal.sol";
+import {IERC20} from "../IERC20.sol"; /// @dev this is required to inherit documentation only
+import {IERC20Base} from "./IERC20Base.sol";
+import {ERC20BaseInternal} from "./ERC20BaseInternal.sol";
 
 /**
  * @title Base ERC20 implementation, excluding optional extensions
@@ -38,7 +36,7 @@ abstract contract ERC20Base is IERC20Base, ERC20BaseInternal {
         address spender,
         uint256 amount
     ) external virtual returns (bool) {
-        return _approve(_msgSender(), spender, amount);
+        return _approve(msg.sender, spender, amount);
     }
 
     ///  @inheritdoc IERC20
@@ -46,7 +44,7 @@ abstract contract ERC20Base is IERC20Base, ERC20BaseInternal {
         address recipient,
         uint256 amount
     ) external virtual returns (bool) {
-        return _transfer(_msgSender(), recipient, amount);
+        return _transfer(msg.sender, recipient, amount);
     }
 
     ///  @inheritdoc IERC20

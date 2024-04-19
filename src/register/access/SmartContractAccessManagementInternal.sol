@@ -3,24 +3,22 @@
 
 pragma solidity ^0.8.17;
 
-import { ISmartContractAccessManagementInternal } from "./ISmartContractAccessManagementInternal.sol";
-import { SmartContractAccessManagementStorage } from "./SmartContractAccessManagementStorage.sol";
-import { RegisterRoleManagementInternal } from "../role/RegisterRoleManagementInternal.sol";
-import { ContextInternal } from "../../metatx/ContextInternal.sol";
+import {ISmartContractAccessManagementInternal} from "./ISmartContractAccessManagementInternal.sol";
+import {SmartContractAccessManagementStorage} from "./SmartContractAccessManagementStorage.sol";
+import {RegisterRoleManagementInternal} from "../role/RegisterRoleManagementInternal.sol";
 
 abstract contract SmartContractAccessManagementInternal is
     ISmartContractAccessManagementInternal,
-    ContextInternal,
     RegisterRoleManagementInternal
 {
     function _canManageSmartContracts() internal view virtual returns (bool) {
-        return _hasRole(CAK_ROLE, _msgSender());
+        return _isCAK(msg.sender);
     }
 
     function _isCallerApprovedSmartContract() internal view returns (bool) {
         SmartContractAccessManagementStorage.Layout
             storage l = SmartContractAccessManagementStorage.layout();
-        bytes32 hash = _atReturningHash(_msgSender());
+        bytes32 hash = _atReturningHash(msg.sender);
         return l.contractsAllowed[hash];
     }
 

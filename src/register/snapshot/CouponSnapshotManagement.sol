@@ -3,9 +3,9 @@
 
 pragma solidity ^0.8.17;
 
-import { ICouponSnapshotManagement } from "./ICouponSnapshotManagement.sol";
-import { CouponSnapshotManagementInternal, ERC20Metadata } from "./CouponSnapshotManagementInternal.sol";
-import { IERC20, IERC20Base, ERC20Base } from "../../token/ERC20/base/ERC20Base.sol";
+import {ICouponSnapshotManagement} from "./ICouponSnapshotManagement.sol";
+import {CouponSnapshotManagementInternal} from "./CouponSnapshotManagementInternal.sol";
+import {IERC20, IERC20Base, ERC20Base} from "../../token/ERC20/base/ERC20Base.sol";
 
 contract CouponSnapshotManagement is
     ICouponSnapshotManagement,
@@ -125,7 +125,7 @@ contract CouponSnapshotManagement is
     }
 
     function burn(uint256 amount_) public {
-        _burn(_msgSender(), amount_);
+        _burn(msg.sender, amount_);
     }
 
     function lock(

@@ -3,10 +3,37 @@
 
 pragma solidity ^0.8.17;
 
-import { IRegisterRoleManagementInternal } from "./IRegisterRoleManagementInternal.sol";
-import { IAccessControl } from "../../access/rbac/IAccessControl.sol";
+import {IRegisterRoleManagementInternal} from "./IRegisterRoleManagementInternal.sol";
+import {IAccessControl} from "../../access/rbac/IAccessControl.sol";
 
-interface IRegisterRoleManagement is IRegisterRoleManagementInternal {
+interface IRegisterRoleManagement is
+    IRegisterRoleManagementInternal,
+    IAccessControl
+{
+    /**
+     * @notice Return the CAK role identifier
+     * @return CAK role identifier
+     */
+    function CAK_ROLE() external pure returns (bytes32);
+
+    /**
+     * @notice Return the B&D role identifier
+     * @return B&D role identifier
+     */
+    function BND_ROLE() external pure returns (bytes32);
+
+    /**
+     * @notice Return the Custodian role identifier
+     * @return Custodian role identifier
+     */
+    function CST_ROLE() external pure returns (bytes32);
+
+    /**
+     * @notice Return the Paying agent role identifier
+     * @return Paying agent role identifier
+     */
+    function PAY_ROLE() external pure returns (bytes32);
+
     /**
      * @notice Return the address of the Register admin
      * @return address of the Register admin

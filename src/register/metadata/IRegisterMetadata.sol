@@ -3,9 +3,10 @@
 
 pragma solidity ^0.8.17;
 
-import { IRegisterMetadataInternal } from "./IRegisterMetadataInternal.sol";
+import {IRegisterMetadataInternal} from "./IRegisterMetadataInternal.sol";
+import {IERC20Metadata} from "../../token/ERC20/extensions/IERC20Metadata.sol";
 
-interface IRegisterMetadata is IRegisterMetadataInternal {
+interface IRegisterMetadata is IRegisterMetadataInternal, IERC20Metadata {
     /**
      * @notice Set the name of this contract
      * @param name_ The name of the contract

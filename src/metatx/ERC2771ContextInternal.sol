@@ -3,8 +3,8 @@
 
 pragma solidity ^0.8.17;
 
-import { IERC2771ContextInternal } from "./IERC2771ContextInternal.sol";
-import { ContextInternal } from "./ContextInternal.sol";
+import {IERC2771ContextInternal} from "./IERC2771ContextInternal.sol";
+import {ContextInternal} from "./ContextInternal.sol";
 
 abstract contract ERC2771ContextInternal is
     IERC2771ContextInternal,
@@ -12,11 +12,11 @@ abstract contract ERC2771ContextInternal is
 {
     address internal _trustedForwarder;
 
-    function __ERC2771Context_init() internal onlyInitializing {
+    function __ERC2771Context_init() internal {
         __ERC2771Context_init_unchained();
     }
 
-    function __ERC2771Context_init_unchained() internal onlyInitializing {}
+    function __ERC2771Context_init_unchained() internal {}
 
     function _isTrustedForwarder(
         address forwarder

@@ -3,8 +3,8 @@
 
 pragma solidity ^0.8.17;
 
-import { IInitializableInternal } from "./IInitializableInternal.sol";
-import { InitializableStorage } from "./InitializableStorage.sol";
+import {IInitializableInternal} from "./IInitializableInternal.sol";
+import {InitializableStorage} from "./InitializableStorage.sol";
 
 abstract contract InitializableInternal is IInitializableInternal {
     /**

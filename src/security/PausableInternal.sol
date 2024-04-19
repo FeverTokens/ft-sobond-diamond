@@ -3,17 +3,13 @@
 
 pragma solidity ^0.8.17;
 
-import { IPausableInternal } from "./IPausableInternal.sol";
-import { PausableStorage } from "./PausableStorage.sol";
-import { ERC2771ContextInternal } from "../metatx/ERC2771ContextInternal.sol";
+import {IPausableInternal} from "./IPausableInternal.sol";
+import {PausableStorage} from "./PausableStorage.sol";
 
 /**
  * @title Internal functions for Pausable security control module.
  */
-abstract contract PausableInternal is
-    IPausableInternal,
-    ERC2771ContextInternal
-{
+abstract contract PausableInternal is IPausableInternal {
     modifier whenPaused() {
         if (!_paused()) {
             revert Pausable__NotPaused();
@@ -41,7 +37,7 @@ abstract contract PausableInternal is
      */
     function _pause() internal virtual whenNotPaused {
         PausableStorage.layout().paused = true;
-        emit Paused(_msgSender());
+        emit Paused(msg.sender);
     }
 
     /**
@@ -49,6 +45,6 @@ abstract contract PausableInternal is
      */
     function _unpause() internal virtual whenPaused {
         delete PausableStorage.layout().paused;
-        emit Unpaused(_msgSender());
+        emit Unpaused(msg.sender);
     }
 }

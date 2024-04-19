@@ -4,39 +4,32 @@
 pragma solidity ^0.8.17;
 
 // import { ITrade } from "../ITrade.sol";
-import { IBilateralTrade } from "./IBilateralTrade.sol";
-import { IRegister } from "../../register/IRegister.sol";
+import "./IBilateralTrade.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 
-contract BilateralTrade is IBilateralTrade, ERC2771Context, ReentrancyGuard {
+contract BilateralTrade is IBilateralTrade, ReentrancyGuard {
     IRegister public register;
     Status public status;
     address public sellerAccount;
     TradeDetail public details;
 
     /**
-     * @dev When the smart contract deploys:
+     * @dev when the smart contract deploys :
      * - we check that deployer has been whitelisted
      * - we check that buyer has been whitelisted
      * - we map the register contract to interact with it
      * - variable sellerAccount gets msg.sender address
      * - details struct buyer gets buyer address
      * - status of current contract is Draft
-     *
      * The constructor cannot be checked by the register by looking ain the hash of
      * the runtime bytecode because this hash does not cover the constructor.
      * so controls in the constructors are to be replicated in the first interaction with a function
      */
-    constructor(
-        IRegister _register,
-        address _buyer,
-        address _forwarder
-    ) ERC2771Context(_forwarder) {
+    constructor(IRegister _register, address _buyer) {
         require(
-            _register.investorsAllowed(_msgSender()) ||
-                _register.isBnD(_msgSender()),
+            _register.investorsAllowed(msg.sender) ||
+                _register.isBnD(msg.sender),
             "Sender must be a valid investor"
         );
 
@@ -46,10 +39,10 @@ contract BilateralTrade is IBilateralTrade, ERC2771Context, ReentrancyGuard {
         );
 
         register = _register;
-        sellerAccount = _msgSender();
+        sellerAccount = msg.sender;
         details.buyer = _buyer;
         status = Status.Draft;
-        emit NotifyTrade(_msgSender(), _buyer, status, 0);
+        emit NotifyTrade(msg.sender, _buyer, status, 0);
     }
 
     /**
@@ -74,7 +67,7 @@ contract BilateralTrade is IBilateralTrade, ERC2771Context, ReentrancyGuard {
     */
     function setDetails(TradeDetail memory _details) public {
         require(
-            _msgSender() == sellerAccount,
+            msg.sender == sellerAccount,
             "Only the seller can update this trade"
         );
         require(
@@ -111,7 +104,7 @@ contract BilateralTrade is IBilateralTrade, ERC2771Context, ReentrancyGuard {
      * --> status becomes Accepted and emits an event
      */
     function approve() public returns (Status) {
-        if (_msgSender() == sellerAccount && status == Status.Draft) {
+        if (msg.sender == sellerAccount && status == Status.Draft) {
             require(details.quantity > 0, "quantity not defined");
             require(details.tradeDate > 0, "trade date not defined");
             // Remove the control because it is functionally possible to need to create a back value trade
@@ -132,7 +125,7 @@ contract BilateralTrade is IBilateralTrade, ERC2771Context, ReentrancyGuard {
             return (status);
         }
 
-        if (_msgSender() == details.buyer && status == Status.Pending) {
+        if (msg.sender == details.buyer && status == Status.Pending) {
             // require(
             //     register.transferFrom(
             //         sellerAccount,
@@ -150,7 +143,7 @@ contract BilateralTrade is IBilateralTrade, ERC2771Context, ReentrancyGuard {
             );
             return (status);
         }
-        revert("the trade cannot be approved in this current status");
+        require(false, "the trade cannot be approved in this current status");
         return (status);
     }
 
@@ -164,7 +157,7 @@ contract BilateralTrade is IBilateralTrade, ERC2771Context, ReentrancyGuard {
     function reject() public {
         require(status != Status.Rejected, "Trade already rejected");
         // seller can cancel the trade at any active state before the trade is executed
-        if (_msgSender() == sellerAccount && (status != Status.Executed)) {
+        if (msg.sender == sellerAccount && (status != Status.Executed)) {
             status = Status.Rejected;
             emit NotifyTrade(
                 sellerAccount,
@@ -176,7 +169,7 @@ contract BilateralTrade is IBilateralTrade, ERC2771Context, ReentrancyGuard {
         }
         // buyer can cancel the trade when pending validation on his side or even after he has accepted the trade (but not when the seller prepares the trade (DRAFT))
         if (
-            _msgSender() == details.buyer &&
+            msg.sender == details.buyer &&
             (status == Status.Pending || status == Status.Accepted)
         ) {
             status = Status.Rejected;
@@ -188,12 +181,12 @@ contract BilateralTrade is IBilateralTrade, ERC2771Context, ReentrancyGuard {
             );
             return;
         }
-        revert("the trade cannot be rejected in this current status");
+        require(false, "the trade cannot be rejected in this current status");
     }
 
     function executeTransfer() public nonReentrant returns (bool) {
         require(
-            _msgSender() == sellerAccount,
+            msg.sender == sellerAccount,
             "Only the seller can confirm the payment on this trade"
         );
         require(

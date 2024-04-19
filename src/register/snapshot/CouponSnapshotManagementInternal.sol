@@ -3,49 +3,26 @@
 
 pragma solidity ^0.8.17;
 
-import { ICouponSnapshotManagementInternal } from "./ICouponSnapshotManagementInternal.sol";
-import { IRegisterMetadataInternal } from "../metadata/IRegisterMetadataInternal.sol";
-import { RegisterRoleManagementInternal } from "../role/RegisterRoleManagementInternal.sol";
-import { SmartContractAccessManagementInternal } from "../access/SmartContractAccessManagementInternal.sol";
-import { InvestorManagementInternal } from "../investors/InvestorManagementInternal.sol";
-import { ERC20Snapshot } from "../../token/ERC20/extensions/ERC20Snapshot.sol";
-import { ERC20Metadata } from "../../token/ERC20/extensions/ERC20Metadata.sol";
-import { CouponSnapshotManagementStorage } from "./CouponSnapshotManagementStorage.sol";
-import { RegisterMetadataStorage } from "../metadata/RegisterMetadataStorage.sol";
-import { InvestorManagementStorage } from "../investors/InvestorManagementStorage.sol";
-import { ERC2771ContextInternal } from "../../metatx/ERC2771ContextInternal.sol";
-import { ContextInternal } from "../../metatx/ContextInternal.sol";
+import {ICouponSnapshotManagementInternal} from "./ICouponSnapshotManagementInternal.sol";
+import {IRegisterMetadataInternal} from "../metadata/IRegisterMetadataInternal.sol";
+import {RegisterRoleManagementInternal} from "../role/RegisterRoleManagementInternal.sol";
+import {SmartContractAccessManagementInternal} from "../access/SmartContractAccessManagementInternal.sol";
+import {InvestorManagementInternal} from "../investors/InvestorManagementInternal.sol";
+import {ERC20Snapshot} from "../../token/ERC20/extensions/ERC20Snapshot.sol";
+// import {ERC20Metadata} from "../../token/ERC20/extensions/ERC20Metadata.sol";
+import {CouponSnapshotManagementStorage} from "./CouponSnapshotManagementStorage.sol";
+import {RegisterMetadataStorage} from "../metadata/RegisterMetadataStorage.sol";
+import {InvestorManagementStorage} from "../investors/InvestorManagementStorage.sol";
 
 abstract contract CouponSnapshotManagementInternal is
     ICouponSnapshotManagementInternal,
     IRegisterMetadataInternal,
-    ERC2771ContextInternal,
     RegisterRoleManagementInternal,
     SmartContractAccessManagementInternal,
     InvestorManagementInternal,
-    ERC20Snapshot,
-    ERC20Metadata
+    ERC20Snapshot
+    // ERC20Metadata
 {
-    function _msgSender()
-        internal
-        view
-        virtual
-        override(ContextInternal, ERC2771ContextInternal)
-        returns (address)
-    {
-        return ERC2771ContextInternal._msgSender();
-    }
-
-    function _msgData()
-        internal
-        view
-        virtual
-        override(ContextInternal, ERC2771ContextInternal)
-        returns (bytes calldata)
-    {
-        return ERC2771ContextInternal._msgData();
-    }
-
     function _currentSnapshotDatetime() internal view returns (uint256) {
         CouponSnapshotManagementStorage.Layout
             storage l = CouponSnapshotManagementStorage.layout();
@@ -319,7 +296,7 @@ abstract contract CouponSnapshotManagementInternal is
     }
 
     function _mint(uint256 amount_) internal {
-        require(_hasRole(CAK_ROLE, _msgSender()), "Caller must be CAK");
+        require(_isCAK(msg.sender), "Caller must be CAK");
 
         RegisterMetadataStorage.Layout storage l = RegisterMetadataStorage
             .layout();
@@ -333,7 +310,7 @@ abstract contract CouponSnapshotManagementInternal is
     }
 
     function _burn(uint256 amount_) internal {
-        require(_hasRole(CAK_ROLE, _msgSender()), "Caller must be CAK");
+        require(_isCAK(msg.sender), "Caller must be CAK");
         RegisterMetadataStorage.Layout storage l = RegisterMetadataStorage
             .layout();
         _forceNextTransfer(); // make the _beforeTokenTransfer ignore that we are at the end of the bond
@@ -344,7 +321,7 @@ abstract contract CouponSnapshotManagementInternal is
         if (_balanceOf(l.primaryIssuanceAccount) == 0 && _totalSupply() == 0) {
             l.status = Status.Repaid;
             emit RegisterStatusChanged(
-                _msgSender(),
+                msg.sender,
                 l.data.name,
                 l.data.isin,
                 l.status
@@ -367,12 +344,14 @@ abstract contract CouponSnapshotManagementInternal is
             .layout();
         //FIXME: redemption:  if currentTS==0 deny all  (returns false) transfer except if TO= PrimaryIssuanceAccount
         /** @dev if sender is CAK then any transfer is accepted */
-        if (_hasRole(CAK_ROLE, msg.sender)) {
+        if (_isCAK(msg.sender)) {
             _transfer(from_, to_, amount_);
+
             return true;
         } else {
             // Not called directly from a CAK user
             /** @dev enforce caller contract is whitelisted */
+
             require(
                 _isContractAllowed(msg.sender),
                 "This contract is not whitelisted"
@@ -390,7 +369,7 @@ abstract contract CouponSnapshotManagementInternal is
             // we can change the status of the register, BnD wallet will not be whitelisted
             if (
                 l.status == IRegisterMetadataInternal.Status.Ready &&
-                _hasRole(BND_ROLE, to_) &&
+                _isBnD(to_) &&
                 from_ == l.primaryIssuanceAccount
             ) {
                 l.status = IRegisterMetadataInternal.Status.Issued;
@@ -399,7 +378,7 @@ abstract contract CouponSnapshotManagementInternal is
                 _initInvestor(to_, address(0), false);
 
                 emit RegisterStatusChanged(
-                    _msgSender(),
+                    msg.sender,
                     l.data.name,
                     l.data.isin,
                     l.status
@@ -408,6 +387,7 @@ abstract contract CouponSnapshotManagementInternal is
                 // standard case
 
                 //make sure the recipient is an allowed investor
+
                 require(
                     _investorsAllowed(to_) == true,
                     "The receiver is not allowed"
@@ -415,12 +395,13 @@ abstract contract CouponSnapshotManagementInternal is
 
                 require(
                     _investorsAllowed(from_) == true || // the seller must be a valid investor at the time of transfer
-                        _hasRole(BND_ROLE, from_), // or the seller is the B&D for the primary distribution
+                        _isBnD(from_), // or the seller is the B&D for the primary distribution
                     "The sender is not allowed"
                 );
             }
 
             _transfer(from_, to_, amount_);
+
             return true;
         }
     }
@@ -439,8 +420,8 @@ abstract contract CouponSnapshotManagementInternal is
     ) internal {
         // check the HTLC status
         require(
-            _hasRole(CAK_ROLE, msg.sender) ||
-                _hasRole(BND_ROLE, msg.sender) ||
+            _isCAK(msg.sender) ||
+                _isBnD(msg.sender) ||
                 _investorsAllowed(msg.sender) ||
                 _isContractAllowed(msg.sender),
             "Access Denied"
@@ -489,8 +470,8 @@ abstract contract CouponSnapshotManagementInternal is
     ) internal {
         // check the HTLC status
         require(
-            _hasRole(CAK_ROLE, msg.sender) ||
-                _hasRole(BND_ROLE, msg.sender) ||
+            _isCAK(msg.sender) ||
+                _isBnD(msg.sender) ||
                 _investorsAllowed(msg.sender) ||
                 _isContractAllowed(msg.sender),
             "Access Denied"

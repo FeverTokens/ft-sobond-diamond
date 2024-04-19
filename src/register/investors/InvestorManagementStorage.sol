@@ -3,7 +3,7 @@
 
 pragma solidity ^0.8.17;
 
-import { IInvestorManagementInternal } from "./IInvestorManagementInternal.sol";
+import {IInvestorManagementInternal} from "./IInvestorManagementInternal.sol";
 
 library InvestorManagementStorage {
     struct Layout {

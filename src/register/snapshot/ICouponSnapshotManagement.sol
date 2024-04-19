@@ -3,14 +3,12 @@
 
 pragma solidity ^0.8.17;
 
-import { ICouponSnapshotManagementInternal } from "./ICouponSnapshotManagementInternal.sol";
-import { IERC20Snapshot } from "../../token/ERC20/extensions/IERC20Snapshot.sol";
-import { IERC20Metadata } from "../../token/ERC20/extensions/IERC20Metadata.sol";
+import {ICouponSnapshotManagementInternal} from "./ICouponSnapshotManagementInternal.sol";
+import {IERC20Snapshot} from "../../token/ERC20/extensions/IERC20Snapshot.sol";
 
 interface ICouponSnapshotManagement is
     ICouponSnapshotManagementInternal,
-    IERC20Snapshot,
-    IERC20Metadata
+    IERC20Snapshot
 {
     /**
      * @notice Retrieve the balance of `account` at the coupon date that

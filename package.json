@@ -4,7 +4,8 @@
 	"description": "",
 	"main": "contracts/index.js",
 	"scripts": {
-		"test": "mocha --register ts-node/register --ignore 'node_modules/**/*' '**/*.spec.ts'",
+		"test": "mocha --register ts-node/register --ignore 'node_modules/**/*' 'tests/*.spec.ts'",
+		"tikchibila": "mocha --register ts-node/register --ignore 'node_modules/**/*' 'tests-working/*.spec.ts'",
 		"build": "./build.sh",
 		"build:mon": "nodemon -w src -e sol --exec ./build.sh",
 		"slither": "docker run --rm  -v $(pwd):/share --entrypoint '/share/slither-cmd.sh' trailofbits/eth-security-toolbox"
@@ -27,12 +28,14 @@
 		"web3": "^1.6.0"
 	},
 	"dependencies": {
+		"@nomicfoundation/hardhat-toolbox": "^5.0.0",
 		"@openzeppelin/contracts": "^4.3.2",
-		"@saturn-chain/smart-contract": "^1.0.18"
+		"@saturn-chain/smart-contract": "^1.0.18",
+		"hardhat": "^2.9.6"
 	},
 	"mocha": {
 		"spec": [
-			"**/*.spec.ts"
+			"tests/*.spec.ts"
 		],
 		"ignore": "node_modules/**/*",
 		"require": [
