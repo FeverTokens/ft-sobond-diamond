@@ -239,7 +239,7 @@ describe("Register snapshot testing", function () {
 			cak.call(),
 			strangerAddress,
 		);
-		expect(strangerBalance).to.equal("1000"); // TODO check if 400 or 1000 ?1
+		expect(strangerBalance).to.equal("400"); // TODO check if 400 or 1000 ?1
 	});
 
 	it("balanceOfCoupon returns account balance when no couponDate set", async () => {

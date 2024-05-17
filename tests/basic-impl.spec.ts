@@ -12,9 +12,9 @@ import {
 	SmartContract,
 	SmartContractInstance,
 } from "@saturn-chain/smart-contract";
-import {blockGasLimit, makeReadyGas, registerGas} from "../tests/gas.constant";
-import {makeBondDate} from "../tests/dates";
-import {collectEvents, getEvents} from "../tests/events";
+import {blockGasLimit, makeReadyGas, registerGas} from "./gas.constant";
+import {makeBondDate} from "./dates";
+import {collectEvents, getEvents} from "./events";
 import {
 	DiamondCut,
 	FacetCutAction,
@@ -230,28 +230,51 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 		//FIXME: maybe remove this since auto-bnd whitelisting was added in register transferFrom
 		// await register.enableInvestorToWhitelist(custodianA.send({maxGas:120000}), await bnd.account()); // B&D must be an investor as well
 
+		const gasEnableInvestorToWhitelistA =
+			await register.enableInvestorToWhitelist(
+				custodianA.test(),
+				await investorA.account(),
+			);
+
 		await register.enableInvestorToWhitelist(
-			custodianA.send({maxGas: 130000}),
+			custodianA.send({maxGas: gasEnableInvestorToWhitelistA}),
 			await investorA.account(),
 		);
 
 		console.log(" Working up to 2");
 
+		const gasEnableInvestorToWhitelistB =
+			await register.enableInvestorToWhitelist(
+				custodianA.test(),
+				await investorB.account(),
+			);
 		await register.enableInvestorToWhitelist(
-			custodianA.send({maxGas: 130000}),
+			custodianA.send({maxGas: gasEnableInvestorToWhitelistB}),
 			await investorB.account(),
 		);
 
+		const gasEnableInvestorToWhitelistC =
+			await register.enableInvestorToWhitelist(
+				custodianA.test(),
+				await investorC.account(),
+			);
 		await register.enableInvestorToWhitelist(
-			custodianA.send({maxGas: 130000}),
+			custodianA.send({maxGas: gasEnableInvestorToWhitelistC}),
 			await investorC.account(),
 		);
 
+		const gasEnableInvestorToWhitelistD =
+			await register.enableInvestorToWhitelist(
+				custodianA.test(),
+				await investorD.account(),
+			);
 		await register.enableInvestorToWhitelist(
-			custodianA.send({maxGas: 130000}),
+			custodianA.send({maxGas: gasEnableInvestorToWhitelistD}),
 			await investorD.account(),
 		);
 		// Have the CAK register the smart contracts
+
+		console.log(" Working up to 3");
 
 		const primary = await allContracts
 			.get(PrimaryIssuanceContractName)
@@ -259,7 +282,13 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 
 		let hash = await register.atReturningHash(cak.call(), primary.deployedAt);
 
-		await register.enableContractToWhitelist(cak.send({maxGas: 120000}), hash);
+		const gasEnablePrimaryToWhitelist =
+			await register.enableContractToWhitelist(cak.test(), hash);
+
+		await register.enableContractToWhitelist(
+			cak.send({maxGas: gasEnablePrimaryToWhitelist}),
+			hash,
+		);
 
 		const trade = await allContracts
 			.get(BilateralTradeContractName)
@@ -271,14 +300,32 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 
 		hash = await register.atReturningHash(cak.call(), trade.deployedAt);
 
-		await register.enableContractToWhitelist(cak.send({maxGas: 120000}), hash);
+		const gasEnableTradeToWhitelist = await register.enableContractToWhitelist(
+			cak.test(),
+			hash,
+		);
+
+		await register.enableContractToWhitelist(
+			cak.send({maxGas: gasEnableTradeToWhitelist}),
+			hash,
+		);
 
 		// Initialize the primary issuance account
-		await register.setExpectedSupply(cak.send({maxGas: 100000}), 1000);
+		const gasSetExpectedSupply = await register.setExpectedSupply(
+			cak.test(),
+			1000,
+		);
+		await register.setExpectedSupply(
+			cak.send({maxGas: gasSetExpectedSupply}),
+			1000,
+		);
 
-		await register.makeReady(cak.send({maxGas: makeReadyGas}));
+		const gasMakeReady = await register.makeReady(cak.test());
+		await register.makeReady(cak.send({maxGas: gasMakeReady}));
 
 		addressOfPIA = await register.primaryIssuanceAccount(cak.call());
+
+		console.log(" Working up to 4");
 	}
 
 	describe("Primary issuance (basic-impl)", function () {
@@ -308,7 +355,10 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 					.deploy(bnd.newi({maxGas: 1000000}), register.deployedAt, 1500);
 
 				// When the B&D finalize the transfer
-				await primary.validate(bnd.send({maxGas: 200000}));
+				const gasValidate = await primary.validate(bnd.test());
+				await primary.validate(bnd.send({maxGas: gasValidate}));
+
+				console.log(" Working up to 5");
 
 				// Expect the B&D account should be credited of the issuance account balance
 				const balanceOfPIA = await register.balanceOf(cak.call(), addressOfPIA);
@@ -335,9 +385,11 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 				register.deployedAt,
 				1500,
 			);
-			await primary.validate(bnd.send({maxGas: 200000})); //this changes the state of register so you need a fresh register for each test case
+
+			const gasValidate = await primary.validate(bnd.test());
+			await primary.validate(bnd.send({maxGas: gasValidate})); //this changes the state of register so you need a fresh register for each test case
 			await expect(
-				primary.validate(bnd.send({maxGas: 200000})),
+				primary.validate(bnd.send({maxGas: gasValidate})),
 			).to.be.rejectedWith("The primary contract should be in initiated state");
 		});
 	});
@@ -380,7 +432,8 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 				"1",
 				"Status.Pending expected",
 			);
-			await primary.validate(bnd.send({maxGas: 200000}));
+			const gasValidate = await primary.validate(bnd.test());
+			await primary.validate(bnd.send({maxGas: gasValidate}));
 			expect(await primary.status(bnd.call())).to.equal(
 				"3",
 				"Status.Accepted expected",
@@ -392,7 +445,9 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			const primary = await allContracts
 				.get(PrimaryIssuanceContractName)
 				.deploy(bnd.newi({maxGas: 1000000}), register.deployedAt, 1500);
-			await primary.validate(bnd.send({maxGas: 200000}));
+
+			const gasValidate = await primary.validate(bnd.test());
+			await primary.validate(bnd.send({maxGas: gasValidate}));
 
 			// The sender should be whitelisted
 			await expect(
@@ -411,7 +466,8 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			const primary = await allContracts
 				.get(PrimaryIssuanceContractName)
 				.deploy(bnd.newi({maxGas: 1000000}), register.deployedAt, 1500);
-			await primary.validate(bnd.send({maxGas: 200000}));
+			const gasValidate = await primary.validate(bnd.test());
+			await primary.validate(bnd.send({maxGas: gasValidate}));
 
 			// The buyer should be whitelisted
 			await expect(
@@ -430,7 +486,9 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			const primary = await allContracts
 				.get(PrimaryIssuanceContractName)
 				.deploy(bnd.newi({maxGas: 1000000}), register.deployedAt, 1500);
-			await primary.validate(bnd.send({maxGas: 200000}));
+
+			const gasValidate = await primary.validate(bnd.test());
+			await primary.validate(bnd.send({maxGas: gasValidate}));
 
 			// When the B&D deploys a Bilateral Trade contract and sets details
 			const trade = await allContracts
@@ -454,7 +512,9 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			const primary = await allContracts
 				.get(PrimaryIssuanceContractName)
 				.deploy(bnd.newi({maxGas: 1000000}), register.deployedAt, 1500);
-			await primary.validate(bnd.send({maxGas: 200000}));
+
+			const gasValidate = await primary.validate(bnd.test());
+			await primary.validate(bnd.send({maxGas: gasValidate}));
 
 			// When the B&D deploys a Bilateral Trade contract and sets details
 			const trade = await allContracts
@@ -468,13 +528,14 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			details.quantity = 155;
 			details.tradeDate = Date.UTC(2022, 9, 10) / (1000 * 3600 * 24);
 			details.valueDate = Date.UTC(2022, 9, 12) / (1000 * 3600 * 24);
-			await trade.setDetails(bnd.send({maxGas: 110000}), details);
+			const gasSetDetails = await trade.setDetails(bnd.test(), details);
+			await trade.setDetails(bnd.send({maxGas: gasSetDetails}), details);
 
 			// When the B&D approve the trade
-			const tx = await trade.approve(bnd.send({maxGas: 100000}));
+			const tx = await trade.approve(bnd.send({maxGas: gasValidate}));
 
 			await expect(
-				trade.setDetails(bnd.send({maxGas: 100000}), details),
+				trade.setDetails(bnd.send({maxGas: gasSetDetails}), details),
 			).to.be.rejectedWith(
 				"Cannot change the trade details unless in draft status",
 			);
@@ -485,7 +546,9 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			const primary = await allContracts
 				.get(PrimaryIssuanceContractName)
 				.deploy(bnd.newi({maxGas: 1000000}), register.deployedAt, 1500);
-			await primary.validate(bnd.send({maxGas: 200000}));
+
+			const gasValidate = await primary.validate(bnd.test());
+			await primary.validate(bnd.send({maxGas: gasValidate}));
 
 			// When the B&D deploys a Bilateral Trade contract and sets details
 			const trade = await allContracts
@@ -499,7 +562,9 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			details.quantity = 155;
 			details.tradeDate = Date.UTC(2022, 9, 10) / (1000 * 3600 * 24);
 			details.valueDate = Date.UTC(2022, 9, 12) / (1000 * 3600 * 24);
-			await trade.setDetails(bnd.send({maxGas: 110000}), details);
+
+			const gasSetDetails = await trade.setDetails(bnd.test(), details);
+			await trade.setDetails(bnd.send({maxGas: gasSetDetails}), details);
 
 			details.buyer = await wrongAccount.account();
 
@@ -515,7 +580,9 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			const primary = await allContracts
 				.get(PrimaryIssuanceContractName)
 				.deploy(bnd.newi({maxGas: 1000000}), register.deployedAt, 1500);
-			await primary.validate(bnd.send({maxGas: 200000}));
+
+			const gasValidate = await primary.validate(bnd.test());
+			await primary.validate(bnd.send({maxGas: gasValidate}));
 
 			// When the B&D deploys a Bilateral Trade contract and sets details
 			const trade = await allContracts
@@ -529,7 +596,9 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			details.quantity = 0;
 			details.tradeDate = Date.UTC(2022, 9, 10) / (1000 * 3600 * 24);
 			details.valueDate = Date.UTC(2022, 9, 12) / (1000 * 3600 * 24);
-			await trade.setDetails(bnd.send({maxGas: 100000}), details);
+
+			const gasSetDetails = await trade.setDetails(bnd.test(), details);
+			await trade.setDetails(bnd.send({maxGas: gasSetDetails}), details);
 
 			// When the B&D approve the trade
 			await expect(
@@ -542,7 +611,9 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			const primary = await allContracts
 				.get(PrimaryIssuanceContractName)
 				.deploy(bnd.newi({maxGas: 1000000}), register.deployedAt, 1500);
-			await primary.validate(bnd.send({maxGas: 200000}));
+
+			const gasValidate = await primary.validate(bnd.test());
+			await primary.validate(bnd.send({maxGas: gasValidate}));
 
 			// When the B&D deploys a Bilateral Trade contract and sets details
 			const trade = await allContracts
@@ -556,7 +627,9 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			details.quantity = 187;
 			details.tradeDate = 0;
 			details.valueDate = Date.UTC(2022, 9, 12) / (1000 * 3600 * 24);
-			await trade.setDetails(bnd.send({maxGas: 100000}), details);
+
+			const gasSetDetails = await trade.setDetails(bnd.test(), details);
+			await trade.setDetails(bnd.send({maxGas: gasSetDetails}), details);
 
 			// When the B&D approve the trade
 			await expect(
@@ -569,7 +642,9 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			const primary = await allContracts
 				.get(PrimaryIssuanceContractName)
 				.deploy(bnd.newi({maxGas: 1000000}), register.deployedAt, 1500);
-			await primary.validate(bnd.send({maxGas: 200000}));
+
+			const gasValidate = await primary.validate(bnd.test());
+			await primary.validate(bnd.send({maxGas: gasValidate}));
 
 			// When the B&D deploys a Bilateral Trade contract and sets details
 			const trade = await allContracts
@@ -583,7 +658,8 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			details.quantity = 187;
 			details.tradeDate = Date.UTC(2022, 14, 12) / (1000 * 3600 * 24);
 			details.valueDate = 0;
-			await trade.setDetails(bnd.send({maxGas: 100000}), details);
+			const gasSetDetails = await trade.setDetails(bnd.test(), details);
+			await trade.setDetails(bnd.send({maxGas: gasSetDetails}), details);
 
 			// When the B&D approve the trade
 			await expect(
@@ -596,7 +672,8 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			const primary = await allContracts
 				.get(PrimaryIssuanceContractName)
 				.deploy(bnd.newi({maxGas: 1000000}), register.deployedAt, 1500);
-			await primary.validate(bnd.send({maxGas: 200000}));
+			const gasValidate = await primary.validate(bnd.test());
+			await primary.validate(bnd.send({maxGas: gasValidate}));
 
 			// When the B&D deploys a Bilateral Trade contract without setting details
 			const trade = await allContracts
@@ -610,7 +687,8 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			details.quantity = 187;
 			details.tradeDate = Date.UTC(2022, 14, 12) / (1000 * 3600 * 24);
 			details.valueDate = Date.UTC(2022, 19, 12) / (1000 * 3600 * 24);
-			await trade.setDetails(bnd.send({maxGas: 110000}), details);
+			const gasSetDetails = await trade.setDetails(bnd.test(), details);
+			await trade.setDetails(bnd.send({maxGas: gasSetDetails}), details);
 
 			// If the trade is approved
 			await expect(trade.approve(bnd.send({maxGas: 100000})));
@@ -631,7 +709,8 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			const primary = await allContracts
 				.get(PrimaryIssuanceContractName)
 				.deploy(bnd.newi({maxGas: 1000000}), register.deployedAt, 1500);
-			await primary.validate(bnd.send({maxGas: 200000}));
+			const gasValidate = await primary.validate(bnd.test());
+			await primary.validate(bnd.send({maxGas: gasValidate}));
 
 			// When the B&D deploys a Bilateral Trade contract without setting details
 			const trade = await allContracts
@@ -645,7 +724,8 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			details.quantity = 187;
 			details.tradeDate = Date.UTC(2022, 14, 12) / (1000 * 3600 * 24);
 			details.valueDate = Date.UTC(2022, 19, 12) / (1000 * 3600 * 24);
-			await trade.setDetails(bnd.send({maxGas: 110000}), details);
+			const gasSetDetails = await trade.setDetails(bnd.test(), details);
+			await trade.setDetails(bnd.send({maxGas: gasSetDetails}), details);
 
 			// If the trade is approved
 			await expect(trade.approve(bnd.send({maxGas: 100000})));
@@ -668,7 +748,8 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 				"1",
 				"Pending status expected",
 			);
-			await primary.validate(bnd.send({maxGas: 200000}));
+			const gasValidate = await primary.validate(bnd.test());
+			await primary.validate(bnd.send({maxGas: gasValidate}));
 
 			const isBnD = await register.isBnD(bnd.call(), await bnd.account());
 			expect(isBnD).to.be.true;
@@ -685,7 +766,8 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			const primary = await allContracts
 				.get(PrimaryIssuanceContractName)
 				.deploy(bnd.newi({maxGas: 1000000}), register.deployedAt, 1500);
-			await primary.validate(bnd.send({maxGas: 200000}));
+			const gasValidate = await primary.validate(bnd.test());
+			await primary.validate(bnd.send({maxGas: gasValidate}));
 
 			// When the B&D deploys a Bilateral Trade contract and sets details
 			const trade = await allContracts
@@ -699,7 +781,8 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			details.quantity = 155;
 			details.tradeDate = Date.UTC(2022, 9, 10) / (1000 * 3600 * 24);
 			details.valueDate = Date.UTC(2022, 9, 12) / (1000 * 3600 * 24);
-			await trade.setDetails(bnd.send({maxGas: 110000}), details);
+			const gasSetDetails = await trade.setDetails(bnd.test(), details);
+			await trade.setDetails(bnd.send({maxGas: gasSetDetails}), details);
 
 			// Then the trade to be propserly initialized
 			expect(await trade.register(bnd.call())).to.equal(register.deployedAt);
@@ -732,7 +815,8 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			const primary = await allContracts
 				.get(PrimaryIssuanceContractName)
 				.deploy(bnd.newi({maxGas: 1000000}), register.deployedAt, 1500);
-			await primary.validate(bnd.send({maxGas: 200000}));
+			const gasValidate = await primary.validate(bnd.test());
+			await primary.validate(bnd.send({maxGas: gasValidate}));
 
 			// When the B&D deploys a Bilateral Trade contract and sets details
 			const trade = await allContracts
@@ -746,7 +830,8 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			details.quantity = 155;
 			details.tradeDate = Date.UTC(2022, 9, 10) / (1000 * 3600 * 24);
 			details.valueDate = Date.UTC(2022, 9, 12) / (1000 * 3600 * 24);
-			await trade.setDetails(bnd.send({maxGas: 110000}), details);
+			const gasSetDetails = await trade.setDetails(bnd.test(), details);
+			await trade.setDetails(bnd.send({maxGas: gasSetDetails}), details);
 
 			// Then the trade to be propserly initialized
 			expect(await trade.register(bnd.call())).to.equal(register.deployedAt);
@@ -802,7 +887,8 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			const primary = await allContracts
 				.get(PrimaryIssuanceContractName)
 				.deploy(bnd.newi({maxGas: 1000000}), register.deployedAt, 1500);
-			await primary.validate(bnd.send({maxGas: 200000}));
+			const gasValidate = await primary.validate(bnd.test());
+			await primary.validate(bnd.send({maxGas: gasValidate}));
 
 			// When the B&D deploys a Bilateral Trade contract and sets details
 			const trade = await allContracts
@@ -816,7 +902,8 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			details.quantity = 155;
 			details.tradeDate = Date.UTC(2022, 9, 10) / (1000 * 3600 * 24);
 			details.valueDate = Date.UTC(2022, 9, 12) / (1000 * 3600 * 24);
-			await trade.setDetails(bnd.send({maxGas: 110000}), details);
+			const gasSetDetails = await trade.setDetails(bnd.test(), details);
+			await trade.setDetails(bnd.send({maxGas: gasSetDetails}), details);
 
 			// Then the trade to be propserly initialized
 			expect(await trade.register(bnd.call())).to.equal(register.deployedAt);
@@ -841,7 +928,8 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			const primary = await allContracts
 				.get(PrimaryIssuanceContractName)
 				.deploy(bnd.newi({maxGas: 1000000}), register.deployedAt, 1500);
-			await primary.validate(bnd.send({maxGas: 200000}));
+			const gasValidate = await primary.validate(bnd.test());
+			await primary.validate(bnd.send({maxGas: gasValidate}));
 
 			const balanceBeforeTrades = await register.balanceOf(
 				bnd.call(),
@@ -861,7 +949,8 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			details1.quantity = 350;
 			details1.tradeDate = Date.UTC(2022, 9, 10) / (1000 * 3600 * 24);
 			details1.valueDate = Date.UTC(2022, 9, 12) / (1000 * 3600 * 24);
-			await trade1.setDetails(bnd.send({maxGas: 200000}), details1);
+			const gasSetDetails = await trade1.setDetails(bnd.test(), details1);
+			await trade1.setDetails(bnd.send({maxGas: gasSetDetails}), details1);
 
 			// Then the trade to be propserly initialized
 			expect(await trade1.register(bnd.call())).to.equal(register.deployedAt);
@@ -872,15 +961,18 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			details1 = await trade1.details(bnd.call());
 
 			// When the B&D approve the trade
-			const tx1 = await trade1.approve(bnd.send({maxGas: 200000}));
+			const gasApprove = await trade1.approve(bnd.test());
+			const tx1 = await trade1.approve(bnd.send({maxGas: gasApprove}));
 
 			// Then the trade should be ready for investor approval and an event been triggered
 			expect(await trade1.status(bnd.call())).to.equal("1");
 
-			await trade1.approve(investorB.send({maxGas: 200000}));
+			const gasApproveB = await trade1.approve(investorB.test());
+			await trade1.approve(investorB.send({maxGas: gasApproveB}));
 			//console.log((await web3.eth.getTransactionReceipt(tx2)).logs);
 
-			await trade1.executeTransfer(bnd.send({maxGas: 120000}));
+			const gasExecuteTransfer = await trade1.executeTransfer(bnd.test());
+			await trade1.executeTransfer(bnd.send({maxGas: gasExecuteTransfer}));
 
 			//const balanceOfInvestorB = await register.balanceOf(bnd.call(), await investorB.account());
 			expect(
@@ -901,7 +993,8 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			details2.quantity = 230;
 			details2.tradeDate = Date.UTC(2022, 9, 10) / (1000 * 3600 * 24);
 			details2.valueDate = Date.UTC(2022, 9, 12) / (1000 * 3600 * 24);
-			await trade2.setDetails(bnd.send({maxGas: 200000}), details2);
+			const gasSetDetails2 = await trade2.setDetails(bnd.test(), details2);
+			await trade2.setDetails(bnd.send({maxGas: gasSetDetails2}), details2);
 
 			// Then the trade to be propserly initialized
 			expect(await trade2.register(bnd.call())).to.equal(register.deployedAt);
@@ -913,11 +1006,14 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			// console.log("Trade details", details2);
 
 			// When the B&D approves the trade
-			await trade2.approve(bnd.send({maxGas: 200000}));
+			const gasApprove2 = await trade2.approve(bnd.test());
+			await trade2.approve(bnd.send({maxGas: gasApprove2}));
 			expect(await trade2.status(bnd.call())).to.equal("1");
-			await trade2.approve(investorC.send({maxGas: 200000}));
+			const gasApproveC = await trade2.approve(investorC.test());
+			await trade2.approve(investorC.send({maxGas: gasApproveC}));
 
-			await trade2.executeTransfer(bnd.send({maxGas: 110000}));
+			const gasExecuteTransfer2 = await trade2.executeTransfer(bnd.test());
+			await trade2.executeTransfer(bnd.send({maxGas: gasExecuteTransfer2}));
 
 			await register.balanceOf(bnd.call(), await investorC.account());
 			expect(
@@ -942,7 +1038,8 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			const primary = await allContracts
 				.get(PrimaryIssuanceContractName)
 				.deploy(bnd.newi({maxGas: 1000000}), register.deployedAt, 1500);
-			await primary.validate(bnd.send({maxGas: 200000}));
+			const gasValidate = await primary.validate(bnd.test());
+			await primary.validate(bnd.send({maxGas: gasValidate}));
 
 			const balanceBeforeTrades = await register.balanceOf(
 				bnd.call(),
@@ -966,7 +1063,8 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			details1.quantity = 270;
 			details1.tradeDate = Date.UTC(2022, 9, 10) / (1000 * 3600 * 24);
 			details1.valueDate = Date.UTC(2022, 9, 12) / (1000 * 3600 * 24);
-			await trade3.setDetails(bnd.send({maxGas: 110000}), details1);
+			const gasSetDetails = await trade3.setDetails(bnd.test(), details1);
+			await trade3.setDetails(bnd.send({maxGas: gasSetDetails}), details1);
 
 			// Then the trade to be propserly initialized
 			expect(await trade3.register(bnd.call())).to.equal(register.deployedAt);
@@ -977,15 +1075,19 @@ describe("Run tests of the Issuance and Bilateral Trades contracts", function ()
 			details1 = await trade3.details(bnd.call());
 			// console.log("Trade details", details1);
 
-			await trade3.approve(bnd.send({maxGas: 100000}));
-			await trade3.approve(investorD.send({maxGas: 200000}));
+			const gasApprove = await trade3.approve(bnd.test());
+			await trade3.approve(bnd.send({maxGas: gasApprove}));
+
+			expect(await trade3.status(bnd.call())).to.equal("1");
+			const gasApproveD = await trade3.approve(investorD.test());
+			await trade3.approve(investorD.send({maxGas: gasApproveD}));
 
 			// Then the trade should be ready for investor approval and an event been triggered
 			// console.log(await trade3.status(bnd.call()));
 
 			await expect(
 				trade3.executeTransfer(bnd.send({maxGas: 90000})),
-			).to.be.rejectedWith("ERC20: transfer amount exceeds balance");
+			).to.be.rejectedWith("ERC20Base: Transfer Exceeds Balance");
 		});
 	});
 });

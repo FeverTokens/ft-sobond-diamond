@@ -11,21 +11,32 @@ import {
 	SmartContract,
 	SmartContractInstance,
 } from "@saturn-chain/smart-contract";
-import {blockGasLimit, makeReadyGas, registerGas} from "../tests/gas.constant";
+import {blockGasLimit, makeReadyGas, registerGas} from "./gas.constant";
+import {addPart, initWeb3Time, makeBondDate, mineBlock, today} from "./dates";
 import {
-	addPart,
-	initWeb3Time,
-	makeBondDate,
-	mineBlock,
-	today,
-} from "../tests/dates";
-import {
-	RegisterContractName,
 	BilateralTradeContractName,
 	CouponTradeContractName,
 	PrimaryIssuanceContractName,
 	bilateralTrade,
 } from "./shared";
+
+import {
+	DiamondCut,
+	FacetCutAction,
+	deployRegisterPackage,
+	getFunctionABI,
+} from "../scripts/diamond";
+
+const RegisterContractName = "RegisterDiamond";
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
+const registerPackages = [
+	"RegisterMetadata",
+	"CouponSnapshotManagement",
+	"RegisterRoleManagement",
+	"SmartContractAccessManagement",
+	"InvestorManagement",
+];
 
 describe("Coupon process - payment", function () {
 	this.timeout(10000);
@@ -39,6 +50,7 @@ describe("Coupon process - payment", function () {
 	let registerContract: SmartContract;
 	let register: SmartContractInstance;
 	let investorAAddress: string;
+	let instance: SmartContractInstance;
 
 	async function init(): Promise<void> {
 		web3 = new Web3(
@@ -77,44 +89,108 @@ describe("Coupon process - payment", function () {
 		const currency = web3.utils.asciiToHex("SEK");
 		const unitVal = 100000;
 		const couponRate = web3.utils.asciiToHex("0.4");
-		// const creationDate = 1309002208; //UTC
-		// const issuanceDate = 1309102208; //UTC
-		// const maturityDate = 1309202208; //UTC
-		// const couponDates = [1671265505, 1671438626, 1672389833]; //UTC [17/12/2022/09h25m, 19/12/2022/09h30m, 30/12/2022/09h43]
-		// const defaultCutofftime = 17 * 3600; //17:00
+		const creationDate = dates.creationDate;
+		const issuanceDate = dates.issuanceDate;
+		const maturityDate = dates.maturityDate;
+		const couponDates = dates.couponDates;
+		const defaultCutofftime = dates.defaultCutofftime;
 
-		if (allContracts.get(RegisterContractName)) {
-			registerContract = allContracts.get(RegisterContractName);
-			register = await registerContract.deploy(
-				cak.newi({maxGas: registerGas}),
-				bondName,
-				isin,
-				expectedSupply,
-				currency,
-				unitVal,
-				couponRate,
-				dates.creationDate,
-				dates.issuanceDate,
-				dates.maturityDate,
-				dates.couponDates,
-				dates.defaultCutofftime,
+		// deploy RegisterDiamondReadable
+		const RegisterDiamondReadable: SmartContract = allContracts.get(
+			"RegisterDiamondReadable",
+		);
+
+		const instanceRegisterDiamondReadable: SmartContractInstance =
+			await RegisterDiamondReadable.deploy(cak.newi({maxGas: registerGas}));
+
+		const addressRegisterDiamondReadable =
+			instanceRegisterDiamondReadable.deployedAt;
+
+		// deploy RegisterDiamondWritable
+		const RegisterDiamondWritable: SmartContract = allContracts.get(
+			"RegisterDiamondWritable",
+		);
+
+		const instanceRegisterDiamondWritable: SmartContractInstance =
+			await RegisterDiamondWritable.deploy(cak.newi({maxGas: registerGas}));
+
+		const addressRegisterDiamondWritable =
+			instanceRegisterDiamondWritable.deployedAt;
+
+		// create initData for RegisterDiamondWritable
+		const initializeABI = await getFunctionABI(
+			"RegisterDiamondWritable",
+			"initialize",
+		);
+
+		const initObject: any = [
+			bondName,
+			isin,
+			expectedSupply,
+			currency,
+			unitVal,
+			couponRate,
+			creationDate,
+			issuanceDate,
+			maturityDate,
+			couponDates,
+			defaultCutofftime,
+		];
+
+		const initData = web3.eth.abi.encodeFunctionCall(initializeABI, initObject);
+
+		// deploy RegisterDiamond
+		registerContract = allContracts.get(RegisterContractName);
+
+		instance = await registerContract.deploy(
+			cak.newi({maxGas: registerGas}),
+			addressRegisterDiamondReadable,
+			addressRegisterDiamondWritable,
+			initData,
+		);
+
+		// instanciate RegisterDiamondWritable
+		const intanceRegisterWritable = RegisterDiamondWritable.at(
+			instance.deployedAt,
+		);
+
+		// create register cuts
+		let registerCuts: DiamondCut[] = [];
+
+		// return an array of promises
+		const promises = registerPackages.map(async (registerPackageName) => {
+			const cut: DiamondCut = await deployRegisterPackage(
+				cak,
+				registerPackageName,
 			);
-		} else {
-			throw new Error(
-				RegisterContractName +
-					" contract not defined in the compilation result",
-			);
-		}
+			return cut;
+		});
+
+		// Use Promise.all to await all promises in parallel
+		registerCuts = await Promise.all(promises);
+
+		await intanceRegisterWritable.diamondCut(
+			cak.send({maxGas: registerGas}),
+			registerCuts,
+			ZERO_ADDRESS,
+			"0x",
+		);
+
+		const IRegister: SmartContract = allContracts.get("IRegister");
+
+		register = IRegister.at(instance.deployedAt);
 
 		//Grant all roles and whitelist addresses
 		await register.grantBndRole(
 			cak.send({maxGas: 100000}),
 			await cak.account(),
 		); // needed to create a dummy primary issuance smart contract
+
 		await register.grantBndRole(
 			cak.send({maxGas: 100000}),
 			await bnd.account(),
 		);
+
 		await register.grantCstRole(
 			cak.send({maxGas: 100000}),
 			await custodianA.account(),
@@ -125,33 +201,74 @@ describe("Coupon process - payment", function () {
 			await payingAgent.account(),
 		);
 
+		const gasEnableInvestorToWhitelistCak =
+			await register.enableInvestorToWhitelist(
+				custodianA.test(),
+				await cak.account(),
+			);
+
 		await register.enableInvestorToWhitelist(
-			custodianA.send({maxGas: 130000}),
+			custodianA.send({maxGas: gasEnableInvestorToWhitelistCak}),
 			await cak.account(),
 		); // needed to deploy a test trade contract
+
+		const gasEnableInvestorToWhitelistBnd =
+			await register.enableInvestorToWhitelist(
+				custodianA.test(),
+				await bnd.account(),
+			);
+
 		await register.enableInvestorToWhitelist(
-			custodianA.send({maxGas: 130000}),
+			custodianA.send({maxGas: gasEnableInvestorToWhitelistBnd}),
 			await bnd.account(),
 		); // B&D must be an investor as well
+
+		const gasEnableInvestorToWhitelistA =
+			await register.enableInvestorToWhitelist(
+				custodianA.test(),
+				await investorA.account(),
+			);
+
 		await register.enableInvestorToWhitelist(
-			custodianA.send({maxGas: 130000}),
+			custodianA.send({maxGas: gasEnableInvestorToWhitelistA}),
 			await investorA.account(),
 		);
+
+		const gasEnableInvestorToWhitelistB =
+			await register.enableInvestorToWhitelist(
+				custodianA.test(),
+				await investorB.account(),
+			);
+
 		await register.enableInvestorToWhitelist(
-			custodianA.send({maxGas: 130000}),
+			custodianA.send({maxGas: gasEnableInvestorToWhitelistB}),
 			await investorB.account(),
 		);
 
+		console.log("Enabled all inverstors to whitelist");
+
 		//initialization of the register  post issuance
+
 		const primary = await allContracts
 			.get(PrimaryIssuanceContractName)
-			.deploy(bnd.newi({maxGas: 1000000}), register.deployedAt, 5000);
+			.deploy(bnd.newi({maxGas: 2000000}), register.deployedAt, 5000);
+
+		console.log("Primary issuance contract deployed");
 
 		await register.balanceOf(bnd.call(), await bnd.account());
 
 		//whitelist primary issuance contract
 		let hash1 = await register.atReturningHash(cak.call(), primary.deployedAt);
-		await register.enableContractToWhitelist(cak.send({maxGas: 120000}), hash1);
+
+		const gasEnablePrimaryToWhitelist =
+			await register.enableContractToWhitelist(cak.test(), hash1);
+
+		await register.enableContractToWhitelist(
+			cak.send({maxGas: gasEnablePrimaryToWhitelist}),
+			hash1,
+		);
+
+		console.log("Step 1");
 
 		//deploy bilateral trade
 		const trade = await allContracts
@@ -162,27 +279,64 @@ describe("Coupon process - payment", function () {
 				await investorA.account(),
 			);
 
+		console.log("Bilateral trade contract deployed");
+
 		//whitelist biletaral trade
 		let hash2 = await register.atReturningHash(cak.call(), trade.deployedAt);
-		await register.enableContractToWhitelist(cak.send({maxGas: 100000}), hash2);
 
-		await register.setExpectedSupply(cak.send({maxGas: 100000}), 1000);
-		await register.makeReady(cak.send({maxGas: makeReadyGas}));
+		const enableTradeToWhitelistGas = await register.enableContractToWhitelist(
+			cak.test(),
+			hash2,
+		);
 
-		await primary.validate(bnd.send({maxGas: 200000}));
+		await register.enableContractToWhitelist(
+			cak.send({maxGas: enableTradeToWhitelistGas}),
+			hash2,
+		);
+
+		console.log("Step 2");
+
+		const gasSetExpectedSupply = await register.setExpectedSupply(
+			cak.test(),
+			1000,
+		);
+		await register.setExpectedSupply(
+			cak.send({maxGas: gasSetExpectedSupply}),
+			1000,
+		);
+
+		console.log("Step 3");
+
+		const gasMakeReady = await register.makeReady(cak.test());
+		await register.makeReady(cak.send({maxGas: gasMakeReady}));
+
+		const validateGas = await primary.validate(bnd.test());
+		await primary.validate(bnd.send({maxGas: validateGas}));
 
 		let details = await trade.details(bnd.call());
 		details.quantity = 155;
 		details.tradeDate = today(); // Date.UTC(2022, 9, 10) / (1000 * 3600 * 24);
 		details.valueDate = addPart(details.tradeDate, "D", 2); // Date.UTC(2022, 9, 12) / (1000 * 3600 * 24);
 
-		await trade.setDetails(bnd.send({maxGas: 110000}), details);
+		const setDetailsGas = await trade.setDetails(bnd.test(), details);
 
-		await trade.approve(bnd.send({maxGas: 100000}));
+		await trade.setDetails(bnd.send({maxGas: setDetailsGas}), details);
 
-		await trade.approve(investorA.send({maxGas: 100000}));
+		const detailSet = await trade.details(bnd.call());
 
-		await trade.executeTransfer(bnd.send({maxGas: 120000}));
+		const bndApproveGas = await trade.approve(bnd.test());
+
+		await trade.approve(bnd.send({maxGas: bndApproveGas}));
+
+		const inverstorApprove = await trade.approve(investorA.test());
+
+		await trade.approve(investorA.send(inverstorApprove));
+
+		const tradeGas = await trade.executeTransfer(bnd.test());
+
+		await trade.executeTransfer(bnd.send({maxGas: tradeGas}));
+
+		console.log("Step 4");
 	}
 
 	async function bilatTrade(
@@ -221,18 +375,29 @@ describe("Coupon process - payment", function () {
 
 	it("investor payment status is not paid after coupon deploy", async () => {
 		const coupon = await deployCoupon();
-		await coupon.setDateAsCurrentCoupon(payingAgent.send({maxGas: 110000}));
+
+		const gasSetDateAsCurrentCoupon = await coupon.setDateAsCurrentCoupon(
+			payingAgent.test(),
+		);
+
+		await coupon.setDateAsCurrentCoupon(
+			payingAgent.send({maxGas: gasSetDateAsCurrentCoupon}),
+		);
+
 		const paymentStatusBefore = await coupon.getInvestorPayments(
 			payingAgent.call(),
 			investorAAddress,
 		);
+
 		expect(paymentStatusBefore).to.equal(
 			"0",
 			"coupon payment status ToBePaid expected after coupon deploy",
 		);
+
 		const timestamp = await register.currentSnapshotDatetime(
 			payingAgent.call(),
 		);
+
 		await mineBlock(Number.parseInt(timestamp) + 1);
 
 		//Act
@@ -240,6 +405,7 @@ describe("Coupon process - payment", function () {
 			cak.send({maxGas: 300000}),
 			investorAAddress,
 		);
+
 		const paymentStatusAfter = await coupon.getInvestorPayments(
 			payingAgent.call(),
 			investorAAddress,
@@ -254,7 +420,14 @@ describe("Coupon process - payment", function () {
 	it("Central Account Keeper may reset payment status if status is paid", async () => {
 		//Arrange
 		const coupon = await deployCoupon();
-		await coupon.setDateAsCurrentCoupon(payingAgent.send({maxGas: 110000}));
+
+		const gasSetDateAsCurrentCoupon = await coupon.setDateAsCurrentCoupon(
+			payingAgent.test(),
+		);
+
+		await coupon.setDateAsCurrentCoupon(
+			payingAgent.send({maxGas: gasSetDateAsCurrentCoupon}),
+		);
 		const timestamp = await register.currentSnapshotDatetime(
 			payingAgent.call(),
 		);
@@ -293,7 +466,13 @@ describe("Coupon process - payment", function () {
 	it("Cusdotian may mark payment as received", async () => {
 		//Arrange
 		const coupon = await deployCoupon();
-		await coupon.setDateAsCurrentCoupon(payingAgent.send({maxGas: 110000}));
+
+		const gasSetDateAsCurrentCoupon = await coupon.setDateAsCurrentCoupon(
+			payingAgent.test(),
+		);
+		await coupon.setDateAsCurrentCoupon(
+			payingAgent.send({maxGas: gasSetDateAsCurrentCoupon}),
+		);
 		const timestamp = await register.currentSnapshotDatetime(
 			payingAgent.call(),
 		);
@@ -331,7 +510,13 @@ describe("Coupon process - payment", function () {
 
 	it("Custodian may not setPaymentAsPaid if status is tobePaid", async () => {
 		const coupon = await deployCoupon();
-		await coupon.setDateAsCurrentCoupon(payingAgent.send({maxGas: 110000}));
+
+		const gasSetDateAsCurrentCoupon = await coupon.setDateAsCurrentCoupon(
+			payingAgent.test(),
+		);
+		await coupon.setDateAsCurrentCoupon(
+			payingAgent.send({maxGas: gasSetDateAsCurrentCoupon}),
+		);
 		const timestamp = await register.currentSnapshotDatetime(
 			payingAgent.call(),
 		);
@@ -347,7 +532,14 @@ describe("Coupon process - payment", function () {
 
 	it("stranger may not setPaymentAsPaid", async () => {
 		const coupon = await deployCoupon();
-		await coupon.setDateAsCurrentCoupon(payingAgent.send({maxGas: 110000}));
+
+		const gasSetDateAsCurrentCoupon = await coupon.setDateAsCurrentCoupon(
+			payingAgent.test(),
+		);
+
+		await coupon.setDateAsCurrentCoupon(
+			payingAgent.send({maxGas: gasSetDateAsCurrentCoupon}),
+		);
 		const timestamp = await register.currentSnapshotDatetime(
 			payingAgent.call(),
 		);
@@ -363,7 +555,13 @@ describe("Coupon process - payment", function () {
 
 	it("Central account Keeper can set the payment status event after the register has moved on to the next period", async () => {
 		const coupon = await deployCoupon();
-		await coupon.setDateAsCurrentCoupon(payingAgent.send({maxGas: 110000}));
+
+		const gasSetDateAsCurrentCoupon = await coupon.setDateAsCurrentCoupon(
+			payingAgent.test(),
+		);
+		await coupon.setDateAsCurrentCoupon(
+			payingAgent.send({maxGas: gasSetDateAsCurrentCoupon}),
+		);
 		const paymentStatusBefore = await coupon.getInvestorPayments(
 			payingAgent.call(),
 			investorAAddress,

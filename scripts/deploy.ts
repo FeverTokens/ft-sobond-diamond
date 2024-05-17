@@ -15,11 +15,7 @@ import {
 } from "@saturn-chain/smart-contract";
 import {blockGasLimit, mintGas, registerGas} from "../tests/gas.constant";
 import {makeBondDate} from "../tests/dates";
-import {
-	DiamondCut,
-	deployRegisterPackage,
-	getFunctionABI,
-} from "../scripts/diamond";
+import {DiamondCut, deployRegisterPackage, getFunctionABI} from "./diamond";
 
 const RegisterContractName = "RegisterDiamond";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";

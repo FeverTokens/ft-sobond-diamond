@@ -12,8 +12,8 @@ import {
 	SmartContract,
 	SmartContractInstance,
 } from "@saturn-chain/smart-contract";
-import {blockGasLimit, registerGas} from "../tests/gas.constant";
-import {makeBondDate} from "../tests/dates";
+import {blockGasLimit, registerGas} from "./gas.constant";
+import {makeBondDate} from "./dates";
 import {
 	DiamondCut,
 	FacetCutAction,
@@ -168,6 +168,7 @@ describe("Register (Bond Issuance) whitelisting", function () {
 			await custodian.account(),
 		);
 	}
+
 	describe("whitelist investor", function () {
 		before(async () => {
 			await deployRegisterContract();

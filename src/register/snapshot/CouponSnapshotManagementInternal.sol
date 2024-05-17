@@ -128,6 +128,7 @@ abstract contract CouponSnapshotManagementInternal is
 
         require(
             from_ == address(0) ||
+                l.amountLocked[from_] == 0 ||
                 _balanceOf(from_) >= l.amountLocked[from_] + amount_,
             "Asset Locked"
         );

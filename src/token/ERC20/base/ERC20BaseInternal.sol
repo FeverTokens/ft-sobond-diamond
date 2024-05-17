@@ -201,9 +201,7 @@ abstract contract ERC20BaseInternal is ReentrancyGuard, IERC20BaseInternal {
             l.balances[holder] = holderBalance - amount;
         }
 
-        uint256 recipientBalance = l.balances[holder];
-
-        l.balances[recipient] = recipientBalance + amount;
+        l.balances[recipient] += amount;
 
         emit Transfer(holder, recipient, amount);
 
