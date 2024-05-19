@@ -1,1 +1,12 @@
+# node modules
 node_modules
+
+# cache and artifacts
+cache
+artifacts
+
+# vscode
+.vscode
+
+# env file
+.env

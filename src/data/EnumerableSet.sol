@@ -179,7 +179,7 @@ library EnumerableSet {
         uint256 index
     ) private view returns (bytes32) {
         if (index >= set._values.length)
-            revert EnumerableSet__IndexOutOfBounds();
+            revert("EnumerableSet: Index Out Of Bounds");
         return set._values[index];
     }
 

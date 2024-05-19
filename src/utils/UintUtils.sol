@@ -75,7 +75,7 @@ library UintUtils {
             }
         }
 
-        if (value != 0) revert UintUtils__InsufficientHexLength();
+        if (value != 0) revert("UintUtils: Insufficient Hex Length");
 
         return string(buffer);
     }

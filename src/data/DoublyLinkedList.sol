@@ -308,7 +308,7 @@ library DoublyLinkedList {
             nextValue != 0 &&
             prevValue == 0 &&
             _next(self, prevValue) != nextValue
-        ) revert DoublyLinkedList__NonExistentEntry();
+        ) revert("DoublyLinkedList: Non Existent Entry");
     }
 
     function _next(
@@ -320,7 +320,7 @@ library DoublyLinkedList {
             prevValue != 0 &&
             nextValue == 0 &&
             _prev(self, nextValue) != prevValue
-        ) revert DoublyLinkedList__NonExistentEntry();
+        ) revert("DoublyLinkedList: Non Existent Entry");
     }
 
     function _insertBefore(
@@ -355,7 +355,7 @@ library DoublyLinkedList {
         bytes32 nextValue,
         bytes32 newValue
     ) private returns (bool status) {
-        if (newValue == 0) revert DoublyLinkedList__InvalidInput();
+        if (newValue == 0) revert("DoublyLinkedList: Invalid Input");
 
         if (!_contains(self, newValue)) {
             _link(self, prevValue, newValue);
@@ -410,7 +410,7 @@ library DoublyLinkedList {
         bytes32 newValue
     ) private returns (bool status) {
         if (!_contains(self, oldValue))
-            revert DoublyLinkedList__NonExistentEntry();
+            revert("DoublyLinkedList: Non Existent Entry");
 
         status = _insertBetween(
             self,

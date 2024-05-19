@@ -9,7 +9,6 @@ const config: HardhatUserConfig = {
 		kerleano: {
 			chainId: 1804,
 			url: "https://cacib-saturn-test.francecentral.cloudapp.azure.com",
-			// accounts: [process.env.BND_PRIVATE_KEY],
 		},
 	},
 

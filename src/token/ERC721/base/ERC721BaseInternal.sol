@@ -21,13 +21,14 @@ abstract contract ERC721BaseInternal is IERC721BaseInternal {
     function _balanceOf(
         address account
     ) internal view virtual returns (uint256) {
-        if (account == address(0)) revert ERC721Base__BalanceQueryZeroAddress();
+        if (account == address(0))
+            revert("ERC721Base: Balance Query Zero Address");
         return ERC721BaseStorage.layout().holderTokens[account].length();
     }
 
     function _ownerOf(uint256 tokenId) internal view virtual returns (address) {
         address owner = ERC721BaseStorage.layout().tokenOwners.get(tokenId);
-        if (owner == address(0)) revert ERC721Base__InvalidOwner();
+        if (owner == address(0)) revert("ERC721Base: Invalid Owner");
         return owner;
     }
 
@@ -38,7 +39,7 @@ abstract contract ERC721BaseInternal is IERC721BaseInternal {
     function _getApproved(
         uint256 tokenId
     ) internal view virtual returns (address) {
-        if (!_exists(tokenId)) revert ERC721Base__NonExistentToken();
+        if (!_exists(tokenId)) revert("ERC721Base: Non Existent Token");
 
         return ERC721BaseStorage.layout().tokenApprovals[tokenId];
     }
@@ -54,7 +55,7 @@ abstract contract ERC721BaseInternal is IERC721BaseInternal {
         address spender,
         uint256 tokenId
     ) internal view virtual returns (bool) {
-        if (!_exists(tokenId)) revert ERC721Base__NonExistentToken();
+        if (!_exists(tokenId)) revert("ERC721Base: Non Existent Token");
 
         address owner = _ownerOf(tokenId);
 
@@ -64,8 +65,8 @@ abstract contract ERC721BaseInternal is IERC721BaseInternal {
     }
 
     function _mint(address to, uint256 tokenId) internal virtual {
-        if (to == address(0)) revert ERC721Base__MintToZeroAddress();
-        if (_exists(tokenId)) revert ERC721Base__TokenAlreadyMinted();
+        if (to == address(0)) revert("ERC721Base: Mint To Zero Address");
+        if (_exists(tokenId)) revert("ERC721Base: Token Already Minted");
 
         _beforeTokenTransfer(address(0), to, tokenId);
 
@@ -88,7 +89,7 @@ abstract contract ERC721BaseInternal is IERC721BaseInternal {
     ) internal virtual {
         _mint(to, tokenId);
         if (!_checkOnERC721Received(address(0), to, tokenId, data))
-            revert ERC721Base__ERC721ReceiverNotImplemented();
+            revert("ERC721Base: ERC721Receiver Not Implemented");
     }
 
     function _burn(uint256 tokenId) internal virtual {
@@ -114,8 +115,8 @@ abstract contract ERC721BaseInternal is IERC721BaseInternal {
     ) internal virtual {
         address owner = _ownerOf(tokenId);
 
-        if (owner != from) revert ERC721Base__NotTokenOwner();
-        if (to == address(0)) revert ERC721Base__TransferToZeroAddress();
+        if (owner != from) revert("ERC721Base: Not Token Owner");
+        if (to == address(0)) revert("ERC721Base: Transfer To Zero Address");
 
         _beforeTokenTransfer(from, to, tokenId);
 
@@ -137,7 +138,7 @@ abstract contract ERC721BaseInternal is IERC721BaseInternal {
     ) internal virtual {
         _handleTransferMessageValue(from, to, tokenId, msg.value);
         if (!_isApprovedOrOwner(msg.sender, tokenId))
-            revert ERC721Base__NotOwnerOrApproved();
+            revert("ERC721Base: Not Owner Or Approved");
         _transfer(from, to, tokenId);
     }
 
@@ -149,7 +150,7 @@ abstract contract ERC721BaseInternal is IERC721BaseInternal {
     ) internal virtual {
         _transfer(from, to, tokenId);
         if (!_checkOnERC721Received(from, to, tokenId, data))
-            revert ERC721Base__ERC721ReceiverNotImplemented();
+            revert("ERC721Base: ERC721Receiver Not Implemented");
     }
 
     function _safeTransferFrom(
@@ -168,7 +169,7 @@ abstract contract ERC721BaseInternal is IERC721BaseInternal {
     ) internal virtual {
         _handleTransferMessageValue(from, to, tokenId, msg.value);
         if (!_isApprovedOrOwner(msg.sender, tokenId))
-            revert ERC721Base__NotOwnerOrApproved();
+            revert("ERC721Base: Not Owner Or Approved");
         _safeTransfer(from, to, tokenId, data);
     }
 
@@ -177,9 +178,9 @@ abstract contract ERC721BaseInternal is IERC721BaseInternal {
 
         address owner = _ownerOf(tokenId);
 
-        if (operator == owner) revert ERC721Base__SelfApproval();
+        if (operator == owner) revert("ERC721Base: Self Approval");
         if (msg.sender != owner && !_isApprovedForAll(owner, msg.sender))
-            revert ERC721Base__NotOwnerOrApproved();
+            revert("ERC721Base: Not Owner Or Approved");
 
         ERC721BaseStorage.layout().tokenApprovals[tokenId] = operator;
         emit Approval(owner, operator, tokenId);
@@ -189,7 +190,7 @@ abstract contract ERC721BaseInternal is IERC721BaseInternal {
         address operator,
         bool status
     ) internal virtual {
-        if (operator == msg.sender) revert ERC721Base__SelfApproval();
+        if (operator == msg.sender) revert("ERC721Base: Self Approval");
         ERC721BaseStorage.layout().operatorApprovals[msg.sender][
             operator
         ] = status;

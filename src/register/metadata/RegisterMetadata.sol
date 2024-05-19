@@ -139,15 +139,6 @@ contract RegisterMetadata is IRegisterMetadata, RegisterMetadataInternal {
     /**
      * @inheritdoc IRegisterMetadata
      */
-    function returnBalanceToPrimaryIssuanceAccount(
-        address investor
-    ) public override returns (bool) {
-        return _returnBalanceToPrimaryIssuanceAccount(investor);
-    }
-
-    /**
-     * @inheritdoc IRegisterMetadata
-     */
     function checkIfCouponDateExists(
         uint256 _couponDate
     ) public view returns (bool) {

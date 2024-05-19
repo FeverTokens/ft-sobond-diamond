@@ -3,7 +3,7 @@
 
 pragma solidity ^0.8.17;
 
-import { UintUtils } from "./UintUtils.sol";
+import {UintUtils} from "./UintUtils.sol";
 
 library AddressUtils {
     using UintUtils for uint256;
@@ -25,8 +25,8 @@ library AddressUtils {
     }
 
     function sendValue(address payable account, uint256 amount) internal {
-        (bool success, ) = account.call{ value: amount }("");
-        if (!success) revert AddressUtils__SendValueFailed();
+        (bool success, ) = account.call{value: amount}("");
+        if (!success) revert("AddressUtils: Send Value Failed");
     }
 
     function functionCall(
@@ -66,7 +66,7 @@ library AddressUtils {
         string memory error
     ) internal returns (bytes memory) {
         if (value > address(this).balance)
-            revert AddressUtils__InsufficientBalance();
+            revert("AddressUtils: Insufficient Balance");
         return _functionCallWithValue(target, data, value, error);
     }
 
@@ -123,9 +123,9 @@ library AddressUtils {
         uint256 value,
         string memory error
     ) private returns (bytes memory) {
-        if (!isContract(target)) revert AddressUtils__NotContract();
+        if (!isContract(target)) revert("AddressUtils: Not Contract");
 
-        (bool success, bytes memory returnData) = target.call{ value: value }(
+        (bool success, bytes memory returnData) = target.call{value: value}(
             data
         );
 

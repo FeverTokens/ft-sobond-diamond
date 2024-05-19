@@ -3,7 +3,7 @@
 
 pragma solidity ^0.8.17;
 
-import { ICouponSnapshotManagementInternal } from "./ICouponSnapshotManagementInternal.sol";
+import {ICouponSnapshotManagementInternal} from "./ICouponSnapshotManagementInternal.sol";
 
 library CouponSnapshotManagementStorage {
     struct Layout {
@@ -12,8 +12,8 @@ library CouponSnapshotManagementStorage {
         uint256 currentCouponDate; //the date part of _currentSnapshotTimestamp : needed to populate the 'couponDateSnapshotId' map when a new snapshotId is created
         bool forceAcceptNextTransfer; // should always be reset to false
         mapping(uint256 => uint256) couponDateSnapshotId; // couponDate => SnnapshotId
-        mapping(address => uint256) amountLocked; // locked tokens
-        mapping(bytes32 => ICouponSnapshotManagementInternal.Lock) locks; // locked tokens
+        mapping(address => uint256) amountLocked; // amount locked by address
+        mapping(bytes32 => ICouponSnapshotManagementInternal.Lock) locks; // locks by transactionId
     }
 
     bytes32 internal constant STORAGE_SLOT =

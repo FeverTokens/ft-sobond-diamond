@@ -3,10 +3,10 @@
 
 pragma solidity ^0.8.17;
 
-import { IERC20SnapshotInternal } from "./IERC20SnapshotInternal.sol";
-import { ERC20Base, ERC20BaseInternal } from "../base/ERC20Base.sol";
-import { ERC20SnapshotStorage } from "./ERC20SnapshotStorage.sol";
-import { Math } from "../../../utils/Math.sol";
+import {IERC20SnapshotInternal} from "./IERC20SnapshotInternal.sol";
+import {ERC20Base, ERC20BaseInternal} from "../base/ERC20Base.sol";
+import {ERC20SnapshotStorage} from "./ERC20SnapshotStorage.sol";
+import {Math} from "../../../utils/Math.sol";
 
 /**
  * @title ERC20Snapshot internal functions
@@ -27,11 +27,11 @@ abstract contract ERC20SnapshotInternal is IERC20SnapshotInternal, ERC20Base {
         uint256 snapshotId,
         ERC20SnapshotStorage.Snapshots storage snapshots
     ) private view returns (bool, uint256) {
-        if (snapshotId == 0) revert ERC20Snapshot__SnapshotIdIsZero();
+        if (snapshotId == 0) revert("ERC20Snapshot: SnapshotId Is Zero");
         ERC20SnapshotStorage.Layout storage l = ERC20SnapshotStorage.layout();
 
         if (snapshotId > l.snapshotId)
-            revert ERC20Snapshot__SnapshotIdDoesNotExists();
+            revert("ERC20Snapshot: SnapshotId Does Not Exists");
 
         uint256 index = _findUpperBound(snapshots.ids, snapshotId);
 

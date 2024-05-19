@@ -20,7 +20,7 @@ abstract contract Proxy is IProxy {
         address implementation = _getImplementation();
 
         if (!implementation.isContract())
-            revert Proxy__ImplementationIsNotContract();
+            revert("Proxy: Implementation Is Not Contract");
 
         assembly {
             calldatacopy(0, 0, calldatasize())

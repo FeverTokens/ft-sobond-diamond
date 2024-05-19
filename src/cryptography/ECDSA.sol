@@ -23,7 +23,7 @@ library ECDSA {
         bytes32 hash,
         bytes memory signature
     ) internal pure returns (address) {
-        if (signature.length != 65) revert ECDSA__InvalidSignatureLength();
+        if (signature.length != 65) revert("ECDSA: Invalid Signature Length");
 
         bytes32 r;
         bytes32 s;
@@ -64,12 +64,12 @@ library ECDSA {
         if (
             uint256(s) >
             0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0
-        ) revert ECDSA__InvalidS();
-        if (v != 27 && v != 28) revert ECDSA__InvalidV();
+        ) revert("ECDSA: Invalid S");
+        if (v != 27 && v != 28) revert("ECDSA: Invalid V");
 
         // If the signature is valid (and not malleable), return the signer address
         address signer = ecrecover(hash, v, r, s);
-        if (signer == address(0)) revert ECDSA__InvalidSignature();
+        if (signer == address(0)) revert("ECDSA: Invalid Signature");
 
         return signer;
     }

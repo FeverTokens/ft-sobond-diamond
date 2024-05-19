@@ -18,9 +18,7 @@ export enum FacetCutAction {
 	Replace,
 	Remove,
 }
-// address target;
-// FacetCutAction action;
-// bytes4[] selectors;
+
 export interface DiamondCut {
 	target: string;
 	action: FacetCutAction;

@@ -11,7 +11,11 @@
 		"slither": "docker run --rm  -v $(pwd):/share --entrypoint '/share/slither-cmd.sh' trailofbits/eth-security-toolbox"
 	},
 	"keywords": [],
-	"author": "Guénolé de Cadoudal",
+	"authors": "Mohamed Toub",
+	"contributors": [
+		"Guénolé de Cadoudal",
+		"Youssef Maghzaz"
+	],
 	"license": "Apache 2.0",
 	"devDependencies": {
 		"@saturn-chain/dlt-tx-data-functions": "^1.0.9",

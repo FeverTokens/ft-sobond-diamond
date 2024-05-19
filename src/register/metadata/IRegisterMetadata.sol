@@ -114,15 +114,6 @@ interface IRegisterMetadata is IRegisterMetadataInternal, IERC20Metadata {
     function primaryIssuanceAccount() external view returns (address);
 
     /**
-     * @notice Get balance of primary issuance account
-     * @param investor The investor address
-     * @return True if allowed
-     */
-    function returnBalanceToPrimaryIssuanceAccount(
-        address investor
-    ) external returns (bool);
-
-    /**
      * @notice Check if a coupon date exists
      * @param _couponDate The coupon date
      * @return True if exists

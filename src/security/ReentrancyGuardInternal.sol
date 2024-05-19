@@ -41,7 +41,7 @@ abstract contract ReentrancyGuardInternal is
     modifier nonReentrant() virtual {
         // On the first call to nonReentrant, status will be 0
         if (_isReentrancyGuardLocked()) {
-            revert ReentrancyGuard__ReentrantCall();
+            revert("ReentrancyGuard: Reentrant Call");
         }
 
         // Any calls to nonReentrant after this point will fail

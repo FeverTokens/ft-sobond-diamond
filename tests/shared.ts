@@ -8,6 +8,15 @@ export const PrimaryIssuanceContractName = "PrimaryIssuance";
 export const BilateralTradeContractName = "BilateralTrade";
 export const CouponTradeContractName = "Coupon";
 
+export enum Status {
+	Draft,
+	Pending,
+	Rejected,
+	Accepted,
+	Executed,
+	Paid,
+}
+
 export async function bilateralTrade(
 	register: SmartContractInstance,
 	from: EthProviderInterface,
@@ -16,7 +25,14 @@ export async function bilateralTrade(
 	date: number,
 	stage: "draft" | "pending" | "accepted" | "executed" = "executed",
 ): Promise<SmartContractInstance | undefined> {
-	// console.log("Creating a bilateral trade", {from:await from.account(), to: await to.account(), qty, stage});
+	console.log("Creating a bilateral trade", {
+		register: register.deployedAt,
+		from: await from.account(),
+		to: await to.account(),
+		qty,
+		date,
+		stage,
+	});
 
 	//deploy bilateral trade
 	let trade: SmartContractInstance | undefined = undefined;
@@ -44,16 +60,16 @@ export async function bilateralTrade(
 	if (["pending", "accepted", "executed"].includes(stage)) {
 		const gasApprove = await trade.approve(from.test());
 		await trade.approve(from.send({maxGas: gasApprove}));
-		// console.log("Trade approved by seller", trade.deployedAt);
+		console.log("Trade status: ", Status[await trade.status(from.call())]);
 
 		if (["accepted", "executed"].includes(stage)) {
 			await trade.approve(to.send({maxGas: gasApprove}));
-			// console.log("Trade approved by buyer", trade.deployedAt);
+			console.log("Trade status: ", Status[await trade.status(to.call())]);
 
 			if (["executed"].includes(stage)) {
 				const gas = await trade.executeTransfer(from.test());
 				await trade.executeTransfer(from.send({maxGas: gas}));
-				// console.log("Trade executed", trade.deployedAt, gas);
+				console.log("Trade status: ", Status[await trade.status(from.call())]);
 			}
 		}
 	}

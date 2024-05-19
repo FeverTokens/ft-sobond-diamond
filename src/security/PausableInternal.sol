@@ -12,14 +12,14 @@ import {PausableStorage} from "./PausableStorage.sol";
 abstract contract PausableInternal is IPausableInternal {
     modifier whenPaused() {
         if (!_paused()) {
-            revert Pausable__NotPaused();
+            revert("Pausable: Not Paused");
         }
         _;
     }
 
     modifier whenNotPaused() {
         if (_paused()) {
-            revert Pausable__Paused();
+            revert("Pausable: Paused");
         }
         _;
     }

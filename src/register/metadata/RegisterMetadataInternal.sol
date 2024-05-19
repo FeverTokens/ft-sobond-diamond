@@ -326,36 +326,6 @@ abstract contract RegisterMetadataInternal is
         l.data.expectedSupply = expectedSupply_;
     }
 
-    function _returnBalanceToPrimaryIssuanceAccount(
-        address investor
-    ) internal virtual returns (bool) {
-        RegisterMetadataStorage.Layout storage l = RegisterMetadataStorage
-            .layout();
-        // can only be called by allowed smart contract (typically the redemption contrat)
-        /** @dev enforce caller contract is whitelisted */
-        require(
-            _isContractAllowed(msg.sender),
-            "This contract is not whitelisted"
-        );
-        //make sure the investor is an allowed investor
-        require(
-            _investorsAllowed(investor) == true,
-            "The investor is not whitelisted"
-        );
-        // ensure the transfer only happens when the current time is after the maturity cut of time
-        uint256 couponDate = _currentCouponDate();
-        require(
-            (couponDate == l.data.maturityDate || couponDate == 0) &&
-                block.timestamp > _currentSnapshotDatetime(),
-            "returning the balance to the primary issuance can only be done after the maturity cut off time"
-        );
-        uint256 balance = this.balanceOf(investor);
-        require(balance > 0, "no balance to return for this investor");
-        _forceNextTransfer(); // make the _beforeTokenTransfer control ignore the end of life of the bond
-        _transfer(investor, _primaryIssuanceAccount(), balance);
-        return true;
-    }
-
     function _findCouponIndex(
         uint256 _couponDate
     ) internal view returns (uint256 index, bool found) {

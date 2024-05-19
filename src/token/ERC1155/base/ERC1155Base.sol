@@ -62,7 +62,7 @@ abstract contract ERC1155Base is IERC1155Base, ERC1155BaseInternal {
         bytes memory data
     ) public virtual {
         if (from != msg.sender && !isApprovedForAll(from, msg.sender))
-            revert ERC1155Base__NotOwnerOrApproved();
+            revert("ERC1155Base: Not Owner Or Approved");
         _safeTransfer(msg.sender, from, to, id, amount, data);
     }
 
@@ -77,7 +77,7 @@ abstract contract ERC1155Base is IERC1155Base, ERC1155BaseInternal {
         bytes memory data
     ) public virtual {
         if (from != msg.sender && !isApprovedForAll(from, msg.sender))
-            revert ERC1155Base__NotOwnerOrApproved();
+            revert("ERC1155Base: Not Owner Or Approved");
         _safeTransferBatch(msg.sender, from, to, ids, amounts, data);
     }
 }

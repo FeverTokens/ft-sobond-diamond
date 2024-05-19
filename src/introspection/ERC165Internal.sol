@@ -3,8 +3,8 @@
 
 pragma solidity ^0.8.17;
 
-import { IERC165Internal } from "./IERC165Internal.sol";
-import { ERC165Storage } from "./ERC165Storage.sol";
+import {IERC165Internal} from "./IERC165Internal.sol";
+import {ERC165Storage} from "./ERC165Storage.sol";
 
 abstract contract ERC165Internal is IERC165Internal {
     function _supportedInterface(
@@ -14,7 +14,8 @@ abstract contract ERC165Internal is IERC165Internal {
     }
 
     function _setSupportedInterface(bytes4 interfaceId, bool status) internal {
-        if (interfaceId == 0xffffffff) revert ERC165Base__InvalidInterfaceId();
+        if (interfaceId == 0xffffffff)
+            revert("ERC165Base: Invalid InterfaceId");
         ERC165Storage.layout().supportedInterfaces[interfaceId] = status;
     }
 }
