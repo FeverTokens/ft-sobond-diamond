@@ -1,9 +1,9 @@
-import chai, {expect} from "chai";
-import chaiAsPromised from "chai-as-promised";
-chai.use(chaiAsPromised);
+// import chai, {expect} from "chai";
+// import chaiAsPromised from "chai-as-promised";
+// chai.use(chaiAsPromised);
 
 import Web3 from "web3";
-import Ganache from "ganache";
+// import Ganache from "ganache";
 import {Web3FunctionProvider} from "@saturn-chain/web3-functions";
 import {EthProviderInterface} from "@saturn-chain/dlt-tx-data-functions";
 
@@ -13,13 +13,16 @@ import {
 	SmartContract,
 	SmartContractInstance,
 } from "@saturn-chain/smart-contract";
-import {blockGasLimit, mintGas, registerGas} from "../tests/gas.constant";
-import {makeBondDate} from "../tests/dates";
+import {registerGas} from "../tests/gas.constant";
+// import {makeBondDate} from "../tests/dates";
 import {DiamondCut, deployRegisterPackage, getFunctionABI} from "./diamond";
-import {MaxInt256} from "ethers";
+// import {MaxInt256} from "ethers";
+import dotenv from "dotenv";
+dotenv.config();
 
 const RegisterContractName = "RegisterDiamond";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+const privateKey = process.env.DEPLOYER_PRIVATE_KEY as string;
 
 const registerPackages = [
 	"RegisterMetadata",
@@ -55,12 +58,14 @@ async function deployRegisterContract(): Promise<void> {
 	);
 
 	// Replace with your actual private key (without the 0x prefix)
-	const privateKey = ""; // TODO use env variables to add deployer private key
+	// TODO use env variables to add deployer private key
+
+	console.log("privateKey", privateKey);
 
 	// Create an account instance from the private key
 	const account = web3.eth.accounts.privateKeyToAccount(privateKey);
 
-	console.log("account", account);
+	// console.log("account", account);
 
 	// Add the account to the wallet
 	web3.eth.accounts.wallet.add(account);
@@ -71,6 +76,8 @@ async function deployRegisterContract(): Promise<void> {
 	const cak = new Web3FunctionProvider(web3.currentProvider, (list) =>
 		Promise.resolve(list[0]),
 	);
+
+	// console.log("cak", cak);
 
 	// get address of cak
 	// Verify if Web3FunctionProvider is correctly instantiated and has the account method

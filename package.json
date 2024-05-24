@@ -35,6 +35,7 @@
 		"@nomicfoundation/hardhat-toolbox": "^5.0.0",
 		"@openzeppelin/contracts": "^4.3.2",
 		"@saturn-chain/smart-contract": "^1.0.18",
+		"dotenv": "^16.4.5",
 		"hardhat": "^2.9.6"
 	},
 	"mocha": {
