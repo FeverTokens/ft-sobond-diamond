@@ -68,6 +68,7 @@ export async function getFunctionABI(
 export async function deployRegisterPackage(
 	cak: EthProviderInterface,
 	RegisterPackageName: string,
+	...optionalParams: any[]
 ): Promise<DiamondCut> {
 	if (allContracts.get(RegisterPackageName)) {
 		const RegisterPackage: SmartContract =
@@ -75,6 +76,7 @@ export async function deployRegisterPackage(
 
 		const registerPackage = await RegisterPackage.deploy(
 			cak.newi({maxGas: registerGas}),
+			...optionalParams,
 		);
 
 		// ! Interface of package should be used to avoid selector collision
